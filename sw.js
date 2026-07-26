@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kontraktor-pro-v1';
+const CACHE_NAME = 'mega-konstruksi-v1';
 const urlsToCache = [
   './index.html',
   './manifest.json',
@@ -7,7 +7,7 @@ const urlsToCache = [
   'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap'
 ];
 
-// Install Service Worker dan caching resources
+// Install Service Worker dan caching resources (Menyimpan data ke memori HP)
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -17,23 +17,24 @@ self.addEventListener('install', event => {
   );
 });
 
-// Intercept fetch requests (agar bisa diakses saat tidak ada internet)
+// Intercept fetch requests (Menyediakan akses saat Offline)
 self.addEventListener('fetch', event => {
-  // Hanya intercept HTTP/S, hindari request chrome-extension dll
+  // Hanya cegat permintaan HTTP/S, biarkan ekstensi atau protokol lain lewat
   if (!event.request.url.startsWith('http')) return;
   
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        // Return from cache jika ada, jika tidak, fetch dari internet
+        // Jika file ada di memori cache HP, gunakan itu. 
+        // Jika tidak, baru minta ke internet.
         return response || fetch(event.request).catch(() => {
-          // Fallback opsional jika internet mati dan request bukan file cache (bisa return halaman offline)
+          // Jika internet mati total, biarkan aplikasi tetap berjalan menggunakan cache
         });
       })
   );
 });
 
-// Update & Bersihkan Cache Lama
+// Update & Bersihkan Cache Lama (Agar saat Anda update codingan, HP pengguna otomatis terbarui)
 self.addEventListener('activate', event => {
   const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
