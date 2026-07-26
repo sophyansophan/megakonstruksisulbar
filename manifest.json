@@ -1,7 +1,7 @@
 {
 "name": "Mega Konstruksi Sulbar",
-"short_name": "MKS",
-"description": "Aplikasi pendata keuangan kontraktor material dan pekerja",
+"short_name": "Mega Konstruksi",
+"description": "Aplikasi pendata keuangan kontraktor material dan pekerja area Sulbar",
 "start_url": "./index.html",
 "display": "standalone",
 "background_color": "#ffffff",
