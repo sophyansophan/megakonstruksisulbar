@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mega-konstruksi-v1';
+const CACHE_NAME = 'mega-konstruksi-app2-v1';
 const urlsToCache = [
   './index.html',
   './manifest.json',
