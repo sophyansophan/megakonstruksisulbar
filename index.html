@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon192px.png">
+    <title>KontraktorPro - Keuangan</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; overflow-x: hidden; }
+        .app-container { max-width: 480px; margin: 0 auto; background: white; min-height: 100vh; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.05); overflow-x: hidden; }
+        
+        /* Memberikan jarak padding bottom agar tidak tertutup nav bar */
+        .view-section { display: none; padding-bottom: 110px !important; animation: fadeIn 0.3s ease-in-out; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+        
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 10px 20px; border-radius: 8px; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s; font-size: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); white-space: nowrap;}
+        .toast.show { opacity: 1; }
+        
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .modal-content-animate {
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        /* Animasi khusus bubble chat AI */
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.9) translateY(10px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .chat-bubble { animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+    </style>
+</head>
+<body class="text-gray-800 antialiased selection:bg-blue-200">
+
+<div id="toast" class="toast">Notifikasi</div>
+
+<div class="app-container">
+    <!-- Header Utama -->
+    <header class="bg-blue-600 text-white p-4 sticky top-0 z-40 shadow-md">
+        <div class="flex justify-between items-center">
+            <h1 class="text-xl font-bold tracking-wide" id="header-title">Dashboard</h1>
+            <button onclick="syncData()" class="p-2 rounded-full hover:bg-blue-700 transition relative" id="btn-sync" title="Sinkronisasi Data">
+                <i class="fas fa-sync-alt" id="sync-icon"></i>
+            </button>
+        </div>
+    </header>
+
+    <main id="view-dashboard" class="view-section active p-4">
+        <!-- Tab Lokasi Proyek -->
+        <div id="dashboard-tabs" class="flex gap-2 overflow-x-auto mb-4 pb-2 hide-scrollbar items-center">
+            <!-- Render via JS -->
+        </div>
+
+        <!-- Filter Tanggal & Judul Lokasi -->
+        <div class="flex justify-between items-center mb-3">
+             <h2 class="text-lg font-bold text-gray-800" id="dash-lokasi-title">Semua Proyek</h2>
+             <button onclick="openDateFilterModal()" class="bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-full text-[11px] font-medium shadow-sm hover:bg-gray-50 flex items-center gap-1.5 transition">
+                 <i class="far fa-calendar-alt text-blue-500"></i>
+                 <span id="date-filter-label">Semua Waktu</span>
+             </button>
+        </div>
+
+        <!-- Kartu Total Utama -->
+        <div class="bg-gradient-to-r from-blue-500 to-blue-700 rounded-2xl p-5 text-white shadow-lg mb-6 relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-4 opacity-20"><i class="fas fa-chart-line text-6xl"></i></div>
+            <p class="text-blue-100 text-sm mb-1">Total Pengeluaran</p>
+            <h2 class="text-3xl font-bold relative z-10" id="dash-total-all">Rp 0</h2>
+        </div>
+        
+        <!-- Grid Kategori yang bisa dilipat (Collapsible) -->
+        <h3 class="font-semibold text-gray-700 mb-3 flex items-center"><i class="fas fa-wallet text-blue-500 mr-2"></i>Rincian Pengeluaran</h3>
+        <div class="grid grid-cols-2 gap-4">
+            <!-- Kotak Material -->
+            <div onclick="toggleDashboardDetail('material')" class="bg-white p-4 rounded-xl shadow border border-gray-100 relative overflow-hidden group cursor-pointer active:scale-95 transition-all hover:border-orange-200">
+                <div class="absolute -right-2 -bottom-2 opacity-10 group-hover:scale-110 transition-transform"><i class="fas fa-boxes text-5xl"></i></div>
+                <div class="text-orange-500 mb-2"><i class="fas fa-boxes fa-lg"></i></div>
+                <p class="text-xs text-gray-500 relative z-10">Material Utama</p>
+                <p class="font-bold text-gray-800 relative z-10" id="dash-total-material">Rp 0</p>
+                <p class="text-[9px] text-gray-400 mt-2 border-t border-gray-100 pt-2"><i class="fas fa-chevron-down mr-1"></i>Klik lihat rincian</p>
+            </div>
+            
+            <!-- Kotak Gaji -->
+            <div onclick="toggleDashboardDetail('gaji')" class="bg-white p-4 rounded-xl shadow border border-gray-100 relative overflow-hidden group cursor-pointer active:scale-95 transition-all hover:border-green-200">
+                <div class="absolute -right-2 -bottom-2 opacity-10 group-hover:scale-110 transition-transform"><i class="fas fa-users text-5xl"></i></div>
+                <div class="text-green-500 mb-2"><i class="fas fa-users fa-lg"></i></div>
+                <p class="text-xs text-gray-500 relative z-10">Gaji Tukang</p>
+                <p class="font-bold text-gray-800 relative z-10" id="dash-total-gaji">Rp 0</p>
+                <p class="text-[9px] text-gray-400 mt-2 border-t border-gray-100 pt-2"><i class="fas fa-chevron-down mr-1"></i>Klik lihat rincian</p>
+            </div>
+            
+            <!-- Kotak Bahan -->
+            <div onclick="toggleDashboardDetail('bahan')" class="bg-white p-4 rounded-xl shadow border border-gray-100 col-span-2 flex items-center justify-between relative overflow-hidden group cursor-pointer active:scale-95 transition-all hover:border-purple-200">
+                <div class="absolute -right-2 -top-2 opacity-10 group-hover:scale-110 transition-transform"><i class="fas fa-hammer text-6xl"></i></div>
+                <div class="relative z-10 w-full">
+                    <div class="flex justify-between items-center w-full">
+                        <div>
+                            <div class="text-purple-500 mb-2"><i class="fas fa-hammer fa-lg"></i></div>
+                            <p class="text-xs text-gray-500">Bahan Bangunan Lainnya</p>
+                        </div>
+                        <p class="font-bold text-gray-800 text-xl relative z-10 text-right" id="dash-total-bahan">Rp 0</p>
+                    </div>
+                    <p class="text-[9px] text-gray-400 mt-2 border-t border-gray-100 pt-2 text-center w-full"><i class="fas fa-chevron-down mr-1"></i>Klik lihat rincian</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rincian Daftar Expandable -->
+        <div id="wrap-detail-material" class="hidden mt-6 animate-[fadeIn_0.3s_ease-in-out]">
+            <h3 class="font-semibold text-gray-700 mb-3 flex items-center"><i class="fas fa-boxes text-orange-500 mr-2"></i>Rincian Material Utama</h3>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-2 mb-4">
+                <div id="dash-detail-material" class="divide-y divide-gray-50"></div>
+            </div>
+        </div>
+
+        <div id="wrap-detail-gaji" class="hidden mt-6 animate-[fadeIn_0.3s_ease-in-out]">
+            <h3 class="font-semibold text-gray-700 mb-3 flex items-center"><i class="fas fa-users text-green-500 mr-2"></i>Rincian Gaji Pekerja</h3>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-2 mb-4">
+                <div id="dash-detail-gaji" class="divide-y divide-gray-50"></div>
+            </div>
+        </div>
+
+        <div id="wrap-detail-bahan" class="hidden mt-6 animate-[fadeIn_0.3s_ease-in-out]">
+            <h3 class="font-semibold text-gray-700 mb-3 flex items-center"><i class="fas fa-hammer text-purple-500 mr-2"></i>Rincian Bahan Bangunan</h3>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-2 mb-4">
+                <div id="dash-detail-bahan" class="divide-y divide-gray-50"></div>
+            </div>
+        </div>
+    </main>
+
+    <main id="view-material" class="view-section p-4">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-1 h-full bg-orange-500"></div>
+            <h3 class="font-semibold mb-3 border-b pb-2 text-gray-800"><i class="fas fa-boxes text-orange-500 mr-2"></i>Input Material Baru</h3>
+            <form id="form-material" onsubmit="handleFormSubmit(event, 'material')">
+                <div class="mb-3">
+                    <label class="block text-xs text-gray-500 mb-1">Tanggal</label>
+                    <input type="date" id="material-date" required class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none bg-gray-50 focus:bg-white transition-colors">
+                </div>
+                <div class="mb-3">
+                    <label class="block text-xs text-gray-500 mb-1">Lokasi Proyek <span class="text-[10px] text-gray-400 font-normal">(Opsional)</span></label>
+                    <input type="text" list="datalist-locations" id="material-location" placeholder="Ketik atau pilih lokasi..." class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none bg-gray-50 focus:bg-white transition-colors">
+                </div>
+                <div class="mb-3">
+                    <label class="block text-xs text-gray-500 mb-1">Nama Material <span class="text-[10px] text-gray-400 font-normal">(Opsional)</span></label>
+                    <input type="text" list="datalist-materials" id="material-name" placeholder="Ketik atau pilih material..." class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none bg-gray-50 focus:bg-white transition-colors">
+                </div>
+                <div class="grid grid-cols-3 gap-2 mb-4">
+                    <div>
+                        <label class="block text-[10px] text-gray-500 mb-1">Jumlah</label>
+                        <input type="number" step="any" id="material-qty" placeholder="Cth: 5" class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none bg-gray-50 focus:bg-white transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-gray-500 mb-1">Harga Satuan</label>
+                        <input type="number" id="material-price" min="0" class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none bg-gray-50 focus:bg-white transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-700 mb-1">Total Harga</label>
+                        <input type="number" id="material-total" min="0" class="w-full border border-orange-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none bg-orange-50 focus:bg-white transition-colors shadow-inner">
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-orange-500 text-white rounded-lg p-2 font-medium hover:bg-orange-600 transition shadow-sm hover:shadow-md">Simpan Data</button>
+            </form>
+        </div>
+        
+        <h3 class="font-semibold text-gray-700 mb-3"><i class="fas fa-history text-gray-400 mr-2"></i>Histori Material</h3>
+        <div class="overflow-x-auto bg-white rounded-xl shadow-sm border border-gray-200">
+            <table class="w-full text-left text-sm">
+                <thead class="bg-gray-50 text-gray-600 border-b">
+                    <tr><th class="p-3 font-medium">Tgl/Detail</th><th class="p-3 text-center font-medium">Jml</th><th class="p-3 text-right font-medium">Total</th></tr>
+                </thead>
+                <tbody id="table-material" class="divide-y divide-gray-100"></tbody>
+            </table>
+        </div>
+    </main>
+
+    <main id="view-gaji" class="view-section p-4">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-1 h-full bg-green-500"></div>
+            <h3 class="font-semibold mb-3 border-b pb-2 text-gray-800"><i class="fas fa-users text-green-500 mr-2"></i>Input Gaji Pekerja</h3>
+            <form id="form-gaji" onsubmit="handleFormSubmit(event, 'gaji')">
+                <div class="mb-3">
+                    <label class="block text-xs text-gray-500 mb-1">Tanggal Pembayaran</label>
+                    <input type="date" id="gaji-date" required class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-green-500 outline-none bg-gray-50 focus:bg-white transition-colors">
+                </div>
+                <div class="mb-3">
+                    <label class="block text-xs text-gray-500 mb-1">Lokasi Proyek <span class="text-[10px] text-gray-400 font-normal">(Opsional)</span></label>
+                    <input type="text" list="datalist-locations" id="gaji-location" placeholder="Ketik atau pilih lokasi..." class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-green-500 outline-none bg-gray-50 focus:bg-white transition-colors">
+                </div>
+                <div class="mb-3">
+                    <label class="block text-xs text-gray-500 mb-1">Nama Pekerja / Tukang <span class="text-[10px] text-gray-400 font-normal">(Opsional)</span></label>
+                    <input type="text" list="datalist-workers" id="gaji-name" placeholder="Ketik atau pilih pekerja..." class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-green-500 outline-none bg-gray-50 focus:bg-white transition-colors">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-xs text-gray-500 mb-1">Total Gaji Dibayar <span class="text-[10px] text-gray-400 font-normal">(Opsional)</span></label>
+                    <input type="number" id="gaji-total" min="0" class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-green-500 outline-none bg-gray-50 focus:bg-white transition-colors">
+                </div>
+                <button type="submit" class="w-full bg-green-600 text-white rounded-lg p-2 font-medium hover:bg-green-700 transition shadow-sm hover:shadow-md">Simpan Data</button>
+            </form>
+        </div>
+        
+        <h3 class="font-semibold text-gray-700 mb-3"><i class="fas fa-history text-gray-400 mr-2"></i>Histori Pembayaran Gaji</h3>
+        <div class="overflow-x-auto bg-white rounded-xl shadow-sm border border-gray-200">
+            <table class="w-full text-left text-sm">
+                <thead class="bg-gray-50 text-gray-600 border-b">
+                    <tr><th class="p-3 font-medium">Tanggal</th><th class="p-3 font-medium">Detail</th><th class="p-3 text-right font-medium">Total</th></tr>
+                </thead>
+                <tbody id="table-gaji" class="divide-y divide-gray-100"></tbody>
+            </table>
+        </div>
+    </main>
+
+    <main id="view-bahan" class="view-section p-4">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-1 h-full bg-purple-500"></div>
+            <h3 class="font-semibold mb-3 border-b pb-2 text-gray-800"><i class="fas fa-hammer text-purple-500 mr-2"></i>Input Bahan Bangunan</h3>
+            <form id="form-bahan" onsubmit="handleFormSubmit(event, 'bahan')">
+                <div class="mb-3">
+                    <label class="block text-xs text-gray-500 mb-1">Tanggal</label>
+                    <input type="date" id="bahan-date" required class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-purple-500 outline-none bg-gray-50 focus:bg-white transition-colors">
+                </div>
+                <div class="mb-3">
+                    <label class="block text-xs text-gray-500 mb-1">Lokasi Proyek <span class="text-[10px] text-gray-400 font-normal">(Opsional)</span></label>
+                    <input type="text" list="datalist-locations" id="bahan-location" placeholder="Ketik atau pilih lokasi..." class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-purple-500 outline-none bg-gray-50 focus:bg-white transition-colors">
+                </div>
+                <div class="mb-3">
+                    <label class="block text-xs text-gray-500 mb-1">Nama Bahan <span class="text-[10px] text-gray-400 font-normal">(Opsional)</span></label>
+                    <input type="text" list="datalist-supplies" id="bahan-name" placeholder="Ketik atau pilih bahan..." class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-purple-500 outline-none bg-gray-50 focus:bg-white transition-colors">
+                </div>
+                <div class="grid grid-cols-3 gap-2 mb-4">
+                    <div>
+                        <label class="block text-[10px] text-gray-500 mb-1">Jumlah</label>
+                        <input type="number" step="any" id="bahan-qty" placeholder="Cth: 10" class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-purple-500 outline-none bg-gray-50 focus:bg-white transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-gray-500 mb-1">Harga Satuan</label>
+                        <input type="number" id="bahan-price" min="0" class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-purple-500 outline-none bg-gray-50 focus:bg-white transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-700 mb-1">Total Harga</label>
+                        <input type="number" id="bahan-total" min="0" class="w-full border border-purple-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-purple-500 outline-none bg-purple-50 focus:bg-white transition-colors shadow-inner">
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-purple-600 text-white rounded-lg p-2 font-medium hover:bg-purple-700 transition shadow-sm hover:shadow-md">Simpan Data</button>
+            </form>
+        </div>
+        
+        <h3 class="font-semibold text-gray-700 mb-3"><i class="fas fa-history text-gray-400 mr-2"></i>Histori Bahan Bangunan</h3>
+        <div class="overflow-x-auto bg-white rounded-xl shadow-sm border border-gray-200">
+            <table class="w-full text-left text-sm">
+                <thead class="bg-gray-50 text-gray-600 border-b">
+                    <tr><th class="p-3 font-medium">Tgl/Detail</th><th class="p-3 text-center font-medium">Jml</th><th class="p-3 text-right font-medium">Total</th></tr>
+                </thead>
+                <tbody id="table-bahan" class="divide-y divide-gray-100"></tbody>
+            </table>
+        </div>
+    </main>
+
+    <main id="view-ai" class="view-section">
+        <div class="p-4" style="padding-bottom: 80px;">
+            <div id="chat-box" class="space-y-4">
+                <!-- AI Welcomes User -->
+                <div class="flex flex-col gap-1 chat-bubble">
+                    <div class="text-[10px] text-gray-400 ml-1 font-medium"><i class="fas fa-robot mr-1"></i>Gemini AI</div>
+                    <div class="bg-blue-50 text-blue-800 p-3.5 rounded-2xl rounded-tl-sm text-sm w-[85%] shadow-sm leading-relaxed">
+                        Halo Bos! Saya adalah Asisten AI pintar. Anda bisa bertanya apa saja seputar pengeluaran, perbandingan biaya proyek, atau rekap total material yang ada di aplikasi ini.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="fixed bottom-[70px] w-full max-w-md left-1/2 transform -translate-x-1/2 bg-white border-t p-3 flex gap-2 z-30 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
+            <input type="text" id="ai-input" placeholder="Tanya total semen bulan ini..." class="flex-1 border border-gray-300 rounded-full px-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" onkeypress="handleEnter(event)">
+            <button onclick="handleSendChat()" class="w-11 h-11 bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-full flex items-center justify-center shrink-0 shadow-md hover:shadow-lg transition-all active:scale-95">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </main>
+
+    <main id="view-pengaturan" class="view-section p-4">
+        <!-- Pengaturan Google Sheet -->
+        <div class="bg-blue-50 p-4 rounded-xl mb-4 border border-blue-100 text-sm text-blue-800 leading-relaxed shadow-sm">
+            <strong class="block mb-1"><i class="fas fa-cloud text-blue-600 mr-1"></i> Cloud Sinkronisasi:</strong> 
+            Masukkan URL Web App Google Apps Script untuk menghubungkan data ke Spreadsheet.
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+            <label class="block text-xs font-bold text-gray-700 mb-1">URL Web App Google Apps Script</label>
+            <input type="text" id="setting-gas-url" placeholder="https://script.google.com/macros/s/..." class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none mb-3 bg-gray-50 focus:bg-white transition-colors">
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="saveGasUrl()" class="w-full bg-gray-800 text-white rounded-lg py-2 text-sm font-medium hover:bg-gray-700 transition flex items-center justify-center shadow-sm"><i class="fas fa-save mr-1"></i> Simpan URL</button>
+                <button onclick="pullDataFromCloud()" class="w-full bg-indigo-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-indigo-700 transition flex items-center justify-center shadow-sm"><i class="fas fa-cloud-download-alt mr-1"></i> Tarik Data</button>
+            </div>
+        </div>
+
+        <!-- Pengaturan AI -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+            <h3 class="font-semibold mb-2 text-sm text-gray-700 border-b pb-2"><i class="fas fa-sparkles text-amber-500 mr-2"></i>Pengaturan AI Assistant</h3>
+            <label class="block text-[11px] text-gray-500 mb-1">API Key Gemini Google (Gratis)</label>
+            <input type="password" id="setting-ai-key" placeholder="Ketik/Paste API Key di sini..." class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none mb-2 bg-gray-50 focus:bg-white transition-colors">
+            <div class="text-[10px] text-gray-400 mb-3 leading-relaxed">
+                Buat API Key gratis di <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-amber-600 underline font-medium">Google AI Studio</a>. Kunci disimpan aman hanya di memori HP Anda.
+            </div>
+            <button onclick="saveApiKey()" class="w-full bg-amber-500 text-white rounded-lg py-2 text-sm font-medium hover:bg-amber-600 transition flex items-center justify-center shadow-sm"><i class="fas fa-key mr-1"></i> Simpan API Key</button>
+        </div>
+
+        <div class="space-y-4">
+            <!-- Lokasi Master -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                <h3 class="font-semibold mb-2 text-sm text-gray-700 border-b pb-2"><i class="fas fa-map-marker-alt text-blue-500 mr-2"></i>Master Lokasi Proyek</h3>
+                <div id="list-locations" class="flex flex-wrap gap-2"></div>
+            </div>
+
+            <!-- Material Master -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                <h3 class="font-semibold mb-2 text-sm text-gray-700 border-b pb-2"><i class="fas fa-boxes text-orange-500 mr-2"></i>Master Material</h3>
+                <div id="list-materials" class="flex flex-wrap gap-2"></div>
+            </div>
+
+            <!-- Bahan Master -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                <h3 class="font-semibold mb-2 text-sm text-gray-700 border-b pb-2"><i class="fas fa-hammer text-purple-500 mr-2"></i>Master Bahan Bangunan</h3>
+                <div id="list-supplies" class="flex flex-wrap gap-2"></div>
+            </div>
+
+            <!-- Gaji Master -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                <h3 class="font-semibold mb-2 text-sm text-gray-700 border-b pb-2"><i class="fas fa-users text-green-500 mr-2"></i>Master Gaji Tukang</h3>
+                <div id="list-workers" class="flex flex-wrap gap-2"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Install PWA -->
+    <div id="install-prompt" class="fixed bottom-20 left-1/2 transform -translate-x-1/2 w-[90%] max-w-sm bg-white rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.15)] border border-blue-100 p-4 z-[60] hidden flex flex-col sm:flex-row items-center gap-3 transition-all duration-500 translate-y-full opacity-0">
+        <div class="flex-shrink-0 bg-blue-100 text-blue-600 w-10 h-10 flex items-center justify-center rounded-lg">
+            <i class="fas fa-download text-xl"></i>
+        </div>
+        <div class="flex-1 text-left w-full text-center sm:text-left">
+            <h4 class="font-bold text-gray-800 text-sm">Install KontraktorPro</h4>
+            <p class="text-[11px] text-gray-500">Pasang di HP untuk akses lebih cepat & offline</p>
+        </div>
+        <div class="flex gap-2 w-full sm:w-auto mt-3 sm:mt-0">
+            <button onclick="dismissInstallPWA()" class="flex-1 bg-gray-100 text-gray-600 text-xs px-3 py-2 rounded-lg font-medium hover:bg-gray-200 transition">Nanti</button>
+            <button onclick="installPWA()" class="flex-1 bg-blue-600 text-white text-xs px-4 py-2 rounded-lg font-medium shadow-sm hover:bg-blue-700 transition">Install</button>
+        </div>
+    </div>
+
+    <!-- Modal Riwayat Dashboard -->
+    <div id="history-modal" class="fixed inset-0 bg-black bg-opacity-60 z-[100] hidden items-end sm:items-center justify-center backdrop-blur-sm">
+        <div class="bg-gray-50 w-full sm:max-w-sm max-h-[85vh] rounded-t-2xl sm:rounded-2xl flex flex-col shadow-2xl modal-content-animate overflow-hidden">
+            <div class="bg-white p-4 border-b border-gray-200 flex justify-between items-start shadow-sm z-10">
+                <div id="history-modal-title"></div>
+                <button onclick="closeHistoryModal()" class="w-8 h-8 flex items-center justify-center bg-gray-100 text-gray-500 rounded-full hover:bg-red-100 hover:text-red-500 transition shadow-inner"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-4 overflow-y-auto flex-1 pb-10" id="history-modal-content"></div>
+        </div>
+    </div>
+
+    <!-- Modal Filter Waktu -->
+    <div id="date-filter-modal" class="fixed inset-0 bg-black bg-opacity-60 z-[100] hidden items-end sm:items-center justify-center backdrop-blur-sm">
+        <div class="bg-white w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl flex flex-col shadow-2xl modal-content-animate overflow-hidden p-5">
+            <div class="flex justify-between items-center mb-4 border-b pb-3 border-gray-100">
+                <h3 class="font-bold text-gray-800"><i class="fas fa-filter text-blue-500 mr-2"></i>Filter Rentang Waktu</h3>
+                <button onclick="closeDateFilterModal()" class="text-gray-400 hover:text-red-500 transition"><i class="fas fa-times text-lg"></i></button>
+            </div>
+            <div class="space-y-4 mb-6">
+                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Dari Tanggal</label><input type="date" id="filter-start" class="w-full border border-gray-200 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"></div>
+                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Sampai Tanggal</label><input type="date" id="filter-end" class="w-full border border-gray-200 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"></div>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="resetDateFilter()" class="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-medium text-sm hover:bg-gray-200 transition">Reset</button>
+                <button onclick="applyDateFilter()" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-medium text-sm hover:bg-blue-700 shadow-md transition">Terapkan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigasi Bawah (Sekarang 6 Menu) -->
+    <nav class="fixed bottom-0 w-full max-w-md bg-white border-t border-gray-200 flex justify-around pb-4 pt-2 px-1 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] z-40">
+        <button onclick="switchView('dashboard')" class="nav-btn flex flex-col items-center p-2 text-gray-400 hover:text-blue-600 transition-colors" data-target="dashboard"><i class="fas fa-chart-pie text-lg mb-1"></i><span class="text-[9px] font-medium">Dashboard</span></button>
+        <button onclick="switchView('material')" class="nav-btn flex flex-col items-center p-2 text-gray-400 hover:text-blue-600 transition-colors" data-target="material"><i class="fas fa-boxes text-lg mb-1"></i><span class="text-[9px] font-medium">Material</span></button>
+        <button onclick="switchView('gaji')" class="nav-btn flex flex-col items-center p-2 text-gray-400 hover:text-blue-600 transition-colors" data-target="gaji"><i class="fas fa-users text-lg mb-1"></i><span class="text-[9px] font-medium">Gaji</span></button>
+        <button onclick="switchView('bahan')" class="nav-btn flex flex-col items-center p-2 text-gray-400 hover:text-blue-600 transition-colors" data-target="bahan"><i class="fas fa-hammer text-lg mb-1"></i><span class="text-[9px] font-medium">Bahan</span></button>
+        <button onclick="switchView('ai')" class="nav-btn flex flex-col items-center p-2 text-gray-400 hover:text-indigo-500 transition-colors" data-target="ai"><i class="fas fa-robot text-lg mb-1"></i><span class="text-[9px] font-medium">AI Chat</span></button>
+        <button onclick="switchView('pengaturan')" class="nav-btn flex flex-col items-center p-2 text-gray-400 hover:text-blue-600 transition-colors" data-target="pengaturan"><i class="fas fa-cog text-lg mb-1"></i><span class="text-[9px] font-medium">Setting</span></button>
+    </nav>
+
+    <!-- Global Datalists untuk Fitur Ketik & Pilih -->
+    <datalist id="datalist-locations"></datalist>
+    <datalist id="datalist-materials"></datalist>
+    <datalist id="datalist-workers"></datalist>
+    <datalist id="datalist-supplies"></datalist>
+</div>
+
+<script>
+    let appData = {
+        transactions: { material: [], gaji: [], bahan: [] },
+        settings: { locations: ['Proyek Utama'], materials: [{name: 'Semen', unit: 'sak'}, {name: 'Pasir', unit: 'res'}], workers: ['Pak Budi'], supplies: [{name: 'Paku', unit: 'kg'}] },
+        gasUrl: ''
+    };
+
+    let currentDashboardLocation = 'Semua';
+    let filterStartDate = '';
+    let filterEndDate = '';
+
+    // PWA Service Worker Registration
+    const isLocalProtocol = window.location.protocol === 'file:' || window.location.protocol === 'blob:' || window.location.protocol === 'about:';
+    if ('serviceWorker' in navigator && !isLocalProtocol) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Peringatan (Abaikan jika dilocalhost):', err));
+        });
+    }
+
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        setTimeout(() => {
+            const promptEl = document.getElementById('install-prompt');
+            promptEl.classList.remove('hidden');
+            setTimeout(() => { promptEl.classList.remove('translate-y-full', 'opacity-0'); promptEl.classList.add('translate-y-0', 'opacity-100'); }, 50);
+        }, 3000);
+    });
+
+    function dismissInstallPWA() {
+        const promptEl = document.getElementById('install-prompt');
+        promptEl.classList.remove('translate-y-0', 'opacity-100');
+        promptEl.classList.add('translate-y-full', 'opacity-0');
+        setTimeout(() => promptEl.classList.add('hidden'), 500);
+    }
+
+    async function installPWA() {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            await deferredPrompt.userChoice;
+            deferredPrompt = null;
+            dismissInstallPWA();
+        }
+    }
+
+    const formatRp = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka || 0);
+    const formatDate = (dateStr) => {
+        if(!dateStr) return '';
+        const d = new Date(dateStr);
+        if(isNaN(d.getTime())) return dateStr; 
+        return `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear().toString().substring(2,4)}`;
+    };
+
+    function setupAutoCalc(type) {
+        const qtyEl = document.getElementById(`${type}-qty`);
+        const priceEl = document.getElementById(`${type}-price`);
+        const totalEl = document.getElementById(`${type}-total`);
+
+        const calc = (changed) => {
+            let q = parseFloat(qtyEl.value);
+            let p = parseFloat(priceEl.value);
+            let t = parseFloat(totalEl.value);
+
+            // Logika kalkulasi cerdas 3 arah
+            if (changed === 'qty' && !isNaN(q)) {
+                if (!isNaN(p)) totalEl.value = Math.round(q * p);
+                else if (!isNaN(t) && q !== 0) priceEl.value = Math.round(t / q);
+            } else if (changed === 'price' && !isNaN(p)) {
+                if (!isNaN(q)) totalEl.value = Math.round(q * p);
+                else if (!isNaN(t) && p !== 0) qtyEl.value = (t / p).toFixed(2).replace(/\.00$/, '');
+            } else if (changed === 'total' && !isNaN(t)) {
+                if (!isNaN(q) && q !== 0) priceEl.value = Math.round(t / q);
+                else if (!isNaN(p) && p !== 0) qtyEl.value = (t / p).toFixed(2).replace(/\.00$/, '');
+            }
+        };
+
+        qtyEl.addEventListener('input', () => calc('qty'));
+        priceEl.addEventListener('input', () => calc('price'));
+        totalEl.addEventListener('input', () => calc('total'));
+    }
+
+    function initApp() {
+        const savedData = localStorage.getItem('kontraktorData');
+        if (savedData) appData = JSON.parse(savedData);
+        
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('material-date').value = today;
+        document.getElementById('gaji-date').value = today;
+        document.getElementById('bahan-date').value = today;
+        document.getElementById('setting-gas-url').value = appData.gasUrl || '';
+        
+        // Memuat API Key AI
+        const savedAiKey = localStorage.getItem('gemini_api_key');
+        if(savedAiKey) document.getElementById('setting-ai-key').value = savedAiKey;
+
+        // Mengaktifkan fitur hitung otomatis
+        setupAutoCalc('material');
+        setupAutoCalc('bahan');
+
+        updateUI();
+        switchView('dashboard');
+        if (appData.gasUrl && navigator.onLine && !isLocalProtocol) setTimeout(() => syncData(true), 1500);
+    }
+
+    function saveData() { localStorage.setItem('kontraktorData', JSON.stringify(appData)); updateUI(); }
+    
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message; toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function switchView(viewId) {
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        document.getElementById(`view-${viewId}`).classList.add('active');
+        
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.classList.remove('text-blue-600', 'text-indigo-500');
+            if(btn.dataset.target === viewId) {
+                btn.classList.add(viewId === 'ai' ? 'text-indigo-500' : 'text-blue-600');
+            }
+        });
+        
+        const titles = { 'dashboard': 'Dashboard', 'material': 'Data Material', 'gaji': 'Gaji Tukang', 'bahan': 'Bahan Bangunan', 'ai': 'AI Assistant', 'pengaturan': 'Pengaturan App' };
+        document.getElementById('header-title').textContent = titles[viewId];
+        window.scrollTo(0, 0);
+    }
+
+    function updateUI() {
+        updateDropdowns(); updateTables(); renderDashboardTabs();
+        updateDateFilterLabel(); updateDashboard(); updateSettingsMaster();
+    }
+
+    function updateDropdowns() {
+        const fillDatalist = (id, dataArr) => {
+            const dl = document.getElementById(id);
+            if(dl) {
+                dl.innerHTML = dataArr.map(item => {
+                    let name = item.name || item;
+                    return `<option value="${name}">`;
+                }).join('');
+            }
+        };
+        fillDatalist('datalist-materials', appData.settings.materials);
+        fillDatalist('datalist-supplies', appData.settings.supplies);
+        fillDatalist('datalist-workers', appData.settings.workers);
+        fillDatalist('datalist-locations', appData.settings.locations || []);
+    }
+
+    function renderDashboardTabs() {
+        const tabsContainer = document.getElementById('dashboard-tabs');
+        const locations = ['Semua', ...(appData.settings.locations || [])];
+        tabsContainer.innerHTML = locations.map(loc => {
+            const isActive = loc === currentDashboardLocation;
+            return `<button onclick="setDashboardLocation('${loc}')" class="whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 border cursor-pointer flex-shrink-0 ${isActive ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white text-gray-600 border-gray-200 hover:bg-blue-50'}">${loc}</button>`;
+        }).join('');
+    }
+
+    function setDashboardLocation(loc) {
+        currentDashboardLocation = loc;
+        updateUI();
+        const activeBtn = document.getElementById('dashboard-tabs').querySelector('.bg-blue-600');
+        if(activeBtn) activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+
+    function openDateFilterModal() { document.getElementById('filter-start').value = filterStartDate; document.getElementById('filter-end').value = filterEndDate; document.getElementById('date-filter-modal').classList.replace('hidden','flex'); }
+    function closeDateFilterModal() { document.getElementById('date-filter-modal').classList.replace('flex','hidden'); }
+    function applyDateFilter() { filterStartDate = document.getElementById('filter-start').value; filterEndDate = document.getElementById('filter-end').value; closeDateFilterModal(); updateUI(); showToast('Filter Waktu Diterapkan'); }
+    function resetDateFilter() { filterStartDate = ''; filterEndDate = ''; closeDateFilterModal(); updateUI(); showToast('Filter Waktu Dihapus'); }
+    function updateDateFilterLabel() {
+        const lbl = document.getElementById('date-filter-label');
+        if (!filterStartDate && !filterEndDate) lbl.textContent = "Semua Waktu";
+        else if (filterStartDate && filterEndDate) lbl.textContent = `${formatDate(filterStartDate)} - ${formatDate(filterEndDate)}`;
+        else if (filterStartDate) lbl.textContent = `Sejak ${formatDate(filterStartDate)}`;
+        else if (filterEndDate) lbl.textContent = `S/d ${formatDate(filterEndDate)}`;
+    }
+
+    function toggleDashboardDetail(type) {
+        const wrap = document.getElementById(`wrap-detail-${type}`);
+        const isHidden = wrap.classList.contains('hidden');
+        ['material', 'gaji', 'bahan'].forEach(t => document.getElementById(`wrap-detail-${t}`).classList.add('hidden'));
+        if (isHidden) { wrap.classList.remove('hidden'); setTimeout(() => wrap.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50); }
+    }
+
+    function updateDashboard() {
+        document.getElementById('dash-lokasi-title').textContent = currentDashboardLocation === 'Semua' ? 'Keseluruhan Proyek' : `Proyek: ${currentDashboardLocation}`;
+        const getFilteredTx = (type) => appData.transactions[type].filter(tx => {
+            let matchLoc = currentDashboardLocation === 'Semua' ? true : (tx.location || 'Umum') === currentDashboardLocation;
+            let matchDate = true;
+            if (filterStartDate) matchDate = matchDate && tx.date >= filterStartDate;
+            if (filterEndDate) matchDate = matchDate && tx.date <= filterEndDate;
+            return matchLoc && matchDate;
+        });
+
+        const totMaterial = getFilteredTx('material').reduce((acc, curr) => acc + curr.total, 0);
+        const totGaji = getFilteredTx('gaji').reduce((acc, curr) => acc + curr.total, 0);
+        const totBahan = getFilteredTx('bahan').reduce((acc, curr) => acc + curr.total, 0);
+        
+        document.getElementById('dash-total-all').textContent = formatRp(totMaterial + totGaji + totBahan);
+        document.getElementById('dash-total-material').textContent = formatRp(totMaterial);
+        document.getElementById('dash-total-gaji').textContent = formatRp(totGaji);
+        document.getElementById('dash-total-bahan').textContent = formatRp(totBahan);
+
+        const renderRincian = (type, containerId) => {
+            const summary = {};
+            getFilteredTx(type).forEach(tx => {
+                if(!summary[tx.name]) summary[tx.name] = { cost: 0, count: 0, unit: tx.unit || '' };
+                summary[tx.name].cost += tx.total;
+                summary[tx.name].count += (type === 'gaji') ? 1 : parseFloat(tx.qty || 1);
+                if(tx.unit && !summary[tx.name].unit) summary[tx.name].unit = tx.unit;
+            });
+
+            const container = document.getElementById(containerId);
+            if(Object.keys(summary).length === 0) {
+                container.innerHTML = `<div class="text-center text-xs text-gray-400 py-4 bg-gray-50 rounded-lg">Tidak ada data untuk lokasi/waktu ini</div>`;
+            } else {
+                container.innerHTML = Object.keys(summary).map(name => {
+                    let subText = type === 'gaji' ? `Dibayar: <span class="font-bold text-gray-700">${summary[name].count} kali</span>` : `Terkumpul: <span class="font-bold text-gray-700">${summary[name].count} ${summary[name].unit}</span>`;
+                    return `
+                        <div onclick="showItemHistory('${type}', '${name}')" class="flex justify-between items-center py-3 px-3 cursor-pointer rounded-lg hover:bg-blue-50 active:bg-blue-100 transition-colors group border-b border-gray-50 last:border-0">
+                            <div>
+                                <p class="font-medium text-sm text-gray-800 group-hover:text-blue-700 transition-colors">${name}</p>
+                                <p class="text-[10px] text-gray-500">${subText}</p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="font-semibold text-sm text-gray-800">${formatRp(summary[name].cost)}</span>
+                                <i class="fas fa-chevron-right text-gray-300 text-xs group-hover:text-blue-500 transition-colors"></i>
+                            </div>
+                        </div>`;
+                }).join('');
+            }
+        };
+
+        renderRincian('material', 'dash-detail-material'); renderRincian('gaji', 'dash-detail-gaji'); renderRincian('bahan', 'dash-detail-bahan');
+    }
+
+    function showItemHistory(type, itemName) {
+        const modal = document.getElementById('history-modal');
+        const iconType = type === 'gaji' ? '<i class="fas fa-users text-green-500 mr-2"></i>' : type === 'material' ? '<i class="fas fa-boxes text-orange-500 mr-2"></i>' : '<i class="fas fa-hammer text-purple-500 mr-2"></i>';
+        const subTitleLocation = currentDashboardLocation === 'Semua' ? 'Semua Proyek' : `${currentDashboardLocation}`;
+
+        document.getElementById('history-modal-title').innerHTML = `<div><span class="text-[10px] text-gray-400 font-semibold uppercase block mb-1">Riwayat: ${subTitleLocation}</span><div class="flex items-center text-lg font-bold text-gray-800">${iconType} ${itemName}</div></div>`;
+        
+        const historyData = appData.transactions[type].filter(tx => {
+            let matchName = tx.name === itemName;
+            let matchLoc = currentDashboardLocation === 'Semua' ? true : (tx.location || 'Umum') === currentDashboardLocation;
+            let matchDate = true;
+            if (filterStartDate) matchDate = matchDate && tx.date >= filterStartDate;
+            if (filterEndDate) matchDate = matchDate && tx.date <= filterEndDate;
+            return matchName && matchLoc && matchDate;
+        });
+        
+        const content = document.getElementById('history-modal-content');
+        if (historyData.length === 0) content.innerHTML = `<div class="text-center text-xs text-gray-500 py-10">Belum ada riwayat tercatat</div>`;
+        else {
+            content.innerHTML = '<div class="space-y-3">' + [...historyData].reverse().map(tx => {
+                let borderColor = type === 'gaji' ? 'bg-green-500' : type === 'material' ? 'bg-orange-500' : 'bg-purple-500';
+                let tagLokasi = (currentDashboardLocation === 'Semua' && tx.location) ? `<span class="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded ml-2"><i class="fas fa-map-marker-alt"></i> ${tx.location}</span>` : '';
+                let detailText = type === 'gaji' ? `<span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-[10px] font-medium"><i class="fas fa-check-circle mr-1"></i>Sukses Dibayar</span>` : `Jml: <span class="font-bold text-gray-700">${tx.qty} ${tx.unit||''}</span> <span class="text-gray-300 mx-1">|</span> @${formatRp(tx.price)}`;
+                
+                return `
+                    <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden flex justify-between items-center">
+                        <div class="absolute left-0 top-0 bottom-0 w-1 ${borderColor}"></div>
+                        <div class="pl-3">
+                            <p class="text-xs font-semibold text-gray-500 mb-1"><i class="far fa-calendar-alt mr-1"></i>${formatDate(tx.date)} ${tagLokasi}</p>
+                            <p class="text-[11px] text-gray-500">${detailText}</p>
+                        </div>
+                        <div class="font-bold text-gray-800 text-sm text-right">${formatRp(tx.total)}</div>
+                    </div>`;
+            }).join('') + '</div>';
+        }
+        modal.classList.replace('hidden','flex');
+    }
+    function closeHistoryModal() { document.getElementById('history-modal').classList.replace('flex','hidden'); }
+
+    function updateTables() {
+        ['material', 'bahan'].forEach(type => {
+            document.getElementById(`table-${type}`).innerHTML = [...appData.transactions[type]].reverse().map(item => `
+                <tr class="hover:bg-blue-50 transition-colors">
+                    <td class="p-3 border-b border-gray-50"><div class="font-medium text-gray-800">${item.name}</div><div class="text-[10px] text-gray-500 mt-1">${formatDate(item.date)} <br> <span class="text-blue-500"><i class="fas fa-map-marker-alt"></i> ${item.location || 'Umum'}</span></div></td>
+                    <td class="p-3 text-center border-b border-gray-50 text-xs"><span class="font-semibold">${item.qty}</span> <span class="text-[10px] text-gray-400 block">${item.unit || ''}</span></td>
+                    <td class="p-3 text-right border-b border-gray-50"><div class="font-semibold text-gray-800 text-sm">${formatRp(item.total)}</div><div class="text-[10px] text-gray-500">@${formatRp(item.price)}</div></td>
+                </tr>`).join('');
+        });
+        document.getElementById('table-gaji').innerHTML = [...appData.transactions.gaji].reverse().map(item => `
+            <tr class="hover:bg-blue-50 transition-colors">
+                <td class="p-3 text-xs text-gray-500 border-b border-gray-50">${formatDate(item.date)}<br><span class="text-[10px] text-blue-500"><i class="fas fa-map-marker-alt"></i> ${item.location || 'Umum'}</span></td>
+                <td class="p-3 border-b border-gray-50"><div class="font-medium text-gray-800">${item.name}</div></td>
+                <td class="p-3 text-right font-semibold text-gray-800 text-sm border-b border-gray-50">${formatRp(item.total)}</td>
+            </tr>`).join('');
+    }
+
+    function handleFormSubmit(e, type) {
+        e.preventDefault();
+        let newTx = { id: Date.now().toString(), type: type, synced: false };
+        newTx.date = document.getElementById(`${type}-date`).value;
+        newTx.location = document.getElementById(`${type}-location`).value.trim() || "";
+        newTx.name = document.getElementById(`${type}-name`).value.trim() || "-";
+
+        if (type === 'material' || type === 'bahan') {
+            newTx.qty = parseFloat(document.getElementById(`${type}-qty`).value) || 0;
+            newTx.price = parseFloat(document.getElementById(`${type}-price`).value) || 0;
+            newTx.total = parseFloat(document.getElementById(`${type}-total`).value) || 0;
+            
+            let masterList = type === 'material' ? appData.settings.materials : appData.settings.supplies;
+            let masterItem = masterList.find(m => (m.name || m).toLowerCase() === newTx.name.toLowerCase());
+            newTx.unit = masterItem ? (masterItem.unit || "") : "";
+        } else {
+            newTx.total = parseFloat(document.getElementById(`gaji-total`).value) || 0;
+        }
+
+        appData.transactions[type].push(newTx); saveData(); e.target.reset();
+        document.getElementById(`${type}-date`).value = new Date().toISOString().split('T')[0];
+        showToast('Data berhasil disimpan!');
+        if(appData.gasUrl && navigator.onLine) syncData(true);
+    }
+
+    function saveApiKey() {
+        const key = document.getElementById('setting-ai-key').value.trim();
+        if(key) {
+            localStorage.setItem('gemini_api_key', key);
+            showToast('API Key Gemini Disimpan!');
+        } else {
+            localStorage.removeItem('gemini_api_key');
+            showToast('API Key Gemini Dihapus.');
+        }
+    }
+
+    function handleEnter(e) { if(e.key === 'Enter') handleSendChat(); }
+    
+    function scrollToChatBottom() {
+        const chatBox = document.getElementById('chat-box');
+        setTimeout(() => { chatBox.parentElement.scrollTop = chatBox.parentElement.scrollHeight; }, 100);
+    }
+
+    function appendChatBubble(role, text, id = null) {
+        const chatBox = document.getElementById('chat-box');
+        const bubble = document.createElement('div');
+        if(id) bubble.id = id;
+        
+        if(role === 'user') {
+            bubble.className = "flex flex-col gap-1 items-end chat-bubble";
+            bubble.innerHTML = `
+                <div class="text-[10px] text-gray-400 mr-1 font-medium">Anda</div>
+                <div class="bg-indigo-600 text-white p-3.5 rounded-2xl rounded-tr-sm text-sm w-[85%] shadow-sm leading-relaxed">${text}</div>
+            `;
+        } else {
+            bubble.className = "flex flex-col gap-1 chat-bubble";
+            // Simple markdown formatter
+            const formattedText = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\*(.*?)\*/g, '<i>$1</i>').replace(/\n/g, '<br>');
+            bubble.innerHTML = `
+                <div class="text-[10px] text-gray-400 ml-1 font-medium"><i class="fas fa-robot mr-1"></i>Gemini AI</div>
+                <div class="bg-blue-50 text-blue-800 p-3.5 rounded-2xl rounded-tl-sm text-sm w-[85%] shadow-sm leading-relaxed">${formattedText}</div>
+            `;
+        }
+        chatBox.appendChild(bubble);
+        scrollToChatBottom();
+    }
+
+    async function handleSendChat() {
+        const inputEl = document.getElementById('ai-input');
+        const text = inputEl.value.trim();
+        if(!text) return;
+
+        const apiKey = localStorage.getItem('gemini_api_key');
+        if(!apiKey) {
+            showToast("Silakan simpan API Key di Setting terlebih dahulu!");
+            switchView('pengaturan'); return;
+        }
+
+        appendChatBubble('user', text);
+        inputEl.value = '';
+        
+        const loadingId = 'loading-' + Date.now();
+        appendChatBubble('ai', '<i class="fas fa-circle-notch fa-spin mr-2"></i>Sedang menganalisis data Anda...', loadingId);
+
+        try {
+            // Kita bungkus data keuangan agar AI memahaminya
+            const sysInstruction = "Anda adalah Asisten AI untuk aplikasi keuangan kontraktor. Anda akan diberikan JSON berisi transaksi material, gaji tukang, dan bahan. Tugas Anda adalah menjawab pertanyaan pengguna secara akurat berdasarkan data tersebut. Jawab dalam bahasa Indonesia yang ramah, profesional (seperti asisten mandor/proyek). Berikan total perhitungan matematika yang teliti jika diminta. Jangan gunakan kata-kata teknis coding (seperti JSON/Array). Jika data kosong atau tidak ada hubungannya, beritahu dengan sopan.";
+            const contextData = JSON.stringify(appData.transactions);
+            const prompt = `Ini adalah Data Keuangan Proyek saya saat ini: ${contextData}\n\nPertanyaan Saya: ${text}`;
+            
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: sysInstruction }] }
+            };
+
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            document.getElementById(loadingId).remove();
+            
+            if(!response.ok) throw new Error("API Error");
+
+            const result = await response.json();
+            if (result.candidates && result.candidates.length > 0) {
+                appendChatBubble('ai', result.candidates[0].content.parts[0].text);
+            } else {
+                appendChatBubble('ai', 'Maaf, saya tidak mengerti. Coba pertanyaan lain.');
+            }
+        } catch(err) {
+            document.getElementById(loadingId).remove();
+            appendChatBubble('ai', 'Maaf, gagal menghubungi AI. Pastikan API Key valid dan koneksi internet stabil.');
+            console.error(err);
+        }
+    }
+
+    function updateSettingsMaster() {
+        const renderTags = (settingKey, containerId) => {
+            const container = document.getElementById(containerId);
+            // Jika data kosong, tampilkan info
+            if (!appData.settings[settingKey] || appData.settings[settingKey].length === 0) {
+                container.innerHTML = `<span class="text-xs text-gray-400 italic">Belum ada data dari Spreadsheet</span>`;
+                return;
+            }
+            
+            container.innerHTML = (appData.settings[settingKey] || []).map((item, idx) => {
+                let name = item.name || item; let unit = item.unit ? ` <span class="text-gray-400 text-[10px]">(${item.unit})</span>` : '';
+                // Menampilkan tag tanpa tombol hapus
+                return `<span class="bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-full text-xs flex items-center gap-2 shadow-sm">${name}${unit}</span>`;
+            }).join('');
+        };
+        renderTags('locations', 'list-locations'); renderTags('materials', 'list-materials'); renderTags('supplies', 'list-supplies'); renderTags('workers', 'list-workers');
+    }
+
+    function saveGasUrl() {
+        const url = document.getElementById('setting-gas-url').value.trim();
+        if (url && !url.includes('/macros/s/')) { showToast('Format URL salah!'); return; }
+        appData.gasUrl = url; saveData(); showToast('URL Tersimpan!');
+        if(url && navigator.onLine) syncData(true);
+    }
+
+    async function syncData(isSilent = false) {
+        if(!appData.gasUrl || !appData.gasUrl.includes('/macros/s/')) { if(!isSilent) { showToast('Isi URL Cloud dulu!'); switchView('pengaturan'); } return; }
+        const syncIcon = document.getElementById('sync-icon'); syncIcon.classList.add('fa-spin');
+        if(!isSilent) showToast('Sinkronisasi berjalan...');
+
+        let unsynced = [];
+        ['material', 'gaji', 'bahan'].forEach(type => { appData.transactions[type].forEach(tx => { if(!tx.synced) unsynced.push(tx); }); });
+
+        try {
+            // PERBAIKAN: Aplikasi tidak lagi mengirim "settings: appData.settings" ke cloud.
+            // Aplikasi sekarang murni hanya mengirim data transaksi baru dan MENERIMA data master dari Cloud.
+            const response = await fetch(appData.gasUrl, { method: 'POST', body: JSON.stringify({ action: 'sync', data: unsynced }), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: 'follow' });
+            if (!response.ok) throw new Error("HTTP Status: " + response.status);
+            const result = await response.json();
+            if(result.status === 'success') { appData.transactions = result.data; if(result.settings) appData.settings = result.settings; saveData(); if(!isSilent) showToast('Aplikasi tersinkron!'); } 
+            else if(!isSilent) showToast('Gagal Tarik: ' + result.message);
+        } catch(err) {
+            if(!isSilent) showToast('Gagal terhubung. Pastikan URL & Internet aman.'); console.error(err);
+        } finally { syncIcon.classList.remove('fa-spin'); }
+    }
+
+    function pullDataFromCloud() {
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-60 z-[100] flex items-center justify-center backdrop-blur-sm px-4';
+        modal.innerHTML = `<div class="bg-white p-6 rounded-2xl w-full max-w-sm text-center shadow-2xl modal-content-animate"><div class="w-16 h-16 bg-indigo-100 text-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-cloud-download-alt text-2xl"></i></div><h3 class="text-lg font-bold text-gray-800 mb-2">Tarik Data Excel?</h3><p class="text-sm text-gray-500 mb-6">Tindakan ini menyamakan isi HP dengan isi Spreadsheet (termasuk Master).</p><div class="flex gap-3"><button id="btn-cancel-pull" class="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-xl font-medium hover:bg-gray-200 transition">Batal</button><button id="btn-confirm-pull" class="flex-1 bg-indigo-600 text-white py-2.5 rounded-xl font-medium hover:bg-indigo-700 shadow-md transition">Tarik Data</button></div></div>`;
+        document.body.appendChild(modal);
+        document.getElementById('btn-cancel-pull').onclick = () => modal.remove();
+        document.getElementById('btn-confirm-pull').onclick = () => { modal.remove(); syncData(false); };
+    }
+
+    window.onload = initApp;
+</script>
+</body>
+</html>
