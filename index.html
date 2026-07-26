@@ -110,7 +110,6 @@
                             <input type="text" id="trx-name" list="datalist-items" placeholder="Ketik atau pilih nama item/orang..." class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors">
                         </div>
                         
-                        <!-- Kalkulator Harga -->
                         <div class="grid grid-cols-3 gap-2 mb-4 bg-gray-50 p-2 rounded-lg border border-gray-100">
                             <div>
                                 <label class="block text-[10px] text-gray-500 mb-1">Jumlah (Qty)</label>
@@ -126,7 +125,6 @@
                             </div>
                         </div>
 
-                        <!-- Input Foto -->
                         <div class="mb-5 p-3 border border-gray-200 border-dashed rounded-lg bg-gray-50">
                             <label class="block text-xs font-semibold text-gray-700 mb-2"><i class="fas fa-camera text-gray-400 mr-1"></i> Lampirkan Bukti/Nota <span class="text-[10px] font-normal text-gray-400">(Opsional)</span></label>
                             <div class="flex items-center gap-3">
@@ -188,7 +186,7 @@
                     <div class="flex flex-col gap-1 chat-bubble self-start w-full">
                         <div class="text-[10px] text-gray-400 ml-1 font-medium"><i class="fas fa-robot mr-1"></i>Gemini AI</div>
                         <div class="bg-blue-50 border border-blue-100 text-blue-800 p-3.5 rounded-2xl rounded-tl-sm text-sm shadow-sm leading-relaxed max-w-[85%] inline-block">
-                            Halo Bos! Saya adalah Asisten AI Anda. Tanya apa saja soal keuangan proyek, misal: "Berapa total biaya semen bulan ini?"
+                            Halo Bos! Saya adalah Asisten AI Anda. Tanya apa saja soal keuangan proyek, misal: "Berapa total pengeluaran hari ini?"
                         </div>
                     </div>
                 </div>
@@ -282,19 +280,15 @@
 </div>
 
 <script>
-    // Struktur Data Baru (Single Table)
+    // KOSONG TOTAL: Tidak ada dummy data. Menunggu ditarik dari Spreadsheet.
     let appData = {
-        transactions: [], // Format tunggal
+        transactions: [], 
         settings: { 
-            locations: ['Proyek Utama'], 
-            categories: ['Material', 'Gaji', 'Bahan'],
-            items: [
-                { category: 'Material', name: 'Semen', unit: 'sak' },
-                { category: 'Gaji', name: 'Tukang Harian', unit: 'hari' },
-                { category: 'Bahan', name: 'Paku', unit: 'kg' }
-            ] 
+            locations: [], 
+            categories: [],
+            items: [] 
         },
-        gasUrl: 'https://script.google.com/macros/s/AKfycbxs_4Dzu8PQlWOKvN6ThN8e-iWgkzDQUl71nhIzH-NMLKyousNP-x9BXw0_eRK8a4lhtA/exec'
+        gasUrl: ''
     };
 
     let currentDashboardLocation = 'Semua';
@@ -331,6 +325,7 @@
             let parsed = JSON.parse(savedData);
             
             // LOGIKA MIGRASI: Otomatis memindahkan format 3 array lama menjadi format 1 array baru
+            // Hanya berjaga-jaga jika ada user yang punya cache data lama
             if (parsed.transactions && !Array.isArray(parsed.transactions)) {
                 let mergedTrx = [];
                 ['material', 'gaji', 'bahan'].forEach(cat => {
@@ -355,11 +350,12 @@
                 delete parsed.settings.supplies;
                 
                 appData = parsed;
-                saveData(); // Simpan format baru
+                saveData(); 
             } else {
                 appData = parsed;
             }
-            if (!appData.gasUrl) appData.gasUrl = 'https://script.google.com/macros/s/AKfycbxs_4Dzu8PQlWOKvN6ThN8e-iWgkzDQUl71nhIzH-NMLKyousNP-x9BXw0_eRK8a4lhtA/exec';
+            
+            // JANGAN MASUKKAN URL DEFAULT KE SINI LAGI. BIARKAN USER INPUT SENDIRI.
         }
         
         const today = new Date().toISOString().split('T')[0];
@@ -399,16 +395,21 @@
     }
 
     function updateUI() {
-        // Render Datalist Lokasi
+        // Render Datalist Lokasi (Pelindung array kosong ditambahkan)
         const dlLoc = document.getElementById('datalist-locations');
         if(dlLoc) dlLoc.innerHTML = (appData.settings.locations || []).map(l => `<option value="${l}">`).join('');
         
         // Render Select Kategori di Input Form
         const catSelect = document.getElementById('trx-category');
         const cats = appData.settings.categories || [];
-        const currentSelected = catSelect.value;
-        catSelect.innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('');
-        if(cats.includes(currentSelected)) catSelect.value = currentSelected;
+        
+        if (cats.length === 0) {
+            catSelect.innerHTML = `<option value="">(Tarik Data Dulu di Setting)</option>`;
+        } else {
+            const currentSelected = catSelect.value;
+            catSelect.innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('');
+            if(cats.includes(currentSelected)) catSelect.value = currentSelected;
+        }
         
         handleCategoryChange(); // Refresh datalist nama item
         
@@ -428,7 +429,7 @@
 
     function renderDashboardTabs() {
         const tabsContainer = document.getElementById('dashboard-tabs');
-        const locations = ['Semua', ...(appData.settings.locations || [])];
+        const locations = ['Semua'].concat(appData.settings.locations || []);
         tabsContainer.innerHTML = locations.map(loc => {
             const isActive = loc === currentDashboardLocation;
             return `<button onclick="setDashboardLocation('${loc}')" class="whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 border cursor-pointer flex-shrink-0 ${isActive ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white text-gray-600 border-gray-200 hover:bg-blue-50'}">${loc}</button>`;
@@ -446,6 +447,22 @@
     function updateDashboard() {
         document.getElementById('dash-lokasi-title').textContent = currentDashboardLocation === 'Semua' ? 'Keseluruhan Proyek' : `Proyek: ${currentDashboardLocation}`;
         
+        // PENGAMANAN: Pastikan format transaksi adalah Array
+        if (!Array.isArray(appData.transactions)) {
+            let merged = [];
+            if (appData.transactions && typeof appData.transactions === 'object') {
+                Object.keys(appData.transactions).forEach(cat => {
+                    if (Array.isArray(appData.transactions[cat])) {
+                        appData.transactions[cat].forEach(tx => {
+                            tx.category = cat.charAt(0).toUpperCase() + cat.slice(1);
+                            merged.push(tx);
+                        });
+                    }
+                });
+            }
+            appData.transactions = merged;
+        }
+
         const filteredTx = appData.transactions.filter(tx => {
             let matchLoc = currentDashboardLocation === 'Semua' ? true : (tx.location || 'Umum') === currentDashboardLocation;
             let matchDate = true;
@@ -470,14 +487,20 @@
             let n = tx.name || 'Tidak Bernama';
             if(!catSummary[c].items[n]) catSummary[c].items[n] = { cost: 0, qty: 0, unit: tx.unit || '' };
             catSummary[c].items[n].cost += (tx.total || 0);
-            catSummary[c].items[n].qty += (parseFloat(tx.qty) || 1); // fallback 1 jika qty kosong
+            catSummary[c].items[n].qty += (parseFloat(tx.qty) || 1);
         });
 
         // Generate Kartu Dashboard Dinamis
         const gridEl = document.getElementById('dash-category-grid');
         const detailEl = document.getElementById('dash-detail-containers');
-        const activeCategories = appData.settings.categories.concat(Object.keys(catSummary)).filter((item, pos, self) => self.indexOf(item) == pos); // Unik
+        const activeCategories = (appData.settings.categories || []).concat(Object.keys(catSummary)).filter((item, pos, self) => self.indexOf(item) == pos);
         
+        if (activeCategories.length === 0) {
+            gridEl.innerHTML = `<div class="col-span-2 md:col-span-3 text-center py-6 text-sm text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-200">Silakan masukkan URL Anda dan klik <b>"Tarik Data"</b> di menu Setting.</div>`;
+            detailEl.innerHTML = '';
+            return;
+        }
+
         let gridHtml = ''; let detailHtml = '';
         
         // Rincian Expandable: SEMUA PENGELUARAN
@@ -506,7 +529,6 @@
             const sty = getCategoryStyle(cat);
             const totalCat = catSummary[cat] ? catSummary[cat].cost : 0;
             
-            // Kartu Grid (Elemen ke-3 dibuat lebar di versi HP)
             const colSpan = (index === 2 && activeCategories.length % 2 !== 0) ? 'col-span-2 md:col-span-1 flex items-center justify-between' : 'flex flex-col';
             const textRight = colSpan.includes('justify-between') ? 'text-right md:text-left md:mt-1' : '';
             const wrapClass = colSpan.includes('justify-between') ? 'flex justify-between items-center w-full md:flex-col md:items-start' : '';
@@ -525,7 +547,6 @@
                 </div>
             </div>`;
 
-            // Daftar Rincian Expandable per Kategori
             const itemsObj = catSummary[cat] ? catSummary[cat].items : {};
             const itemsKeys = Object.keys(itemsObj).sort((a,b) => itemsObj[b].cost - itemsObj[a].cost);
             
@@ -554,7 +575,6 @@
     }
 
     function toggleDashboardDetail(targetId) {
-        // Sembunyikan semua wrap detail
         const containers = document.getElementById('dash-detail-containers').children;
         let wasHidden = false;
         
@@ -615,7 +635,6 @@
     
     function closeHistoryModal() { document.getElementById('history-modal').classList.replace('flex','hidden'); }
 
-    // Filter Waktu
     function openDateFilterModal() { document.getElementById('filter-start').value = filterStartDate; document.getElementById('filter-end').value = filterEndDate; document.getElementById('date-filter-modal').classList.replace('hidden','flex'); }
     function closeDateFilterModal() { document.getElementById('date-filter-modal').classList.replace('flex','hidden'); }
     function applyDateFilter() { filterStartDate = document.getElementById('filter-start').value; filterEndDate = document.getElementById('filter-end').value; closeDateFilterModal(); updateUI(); showToast('Filter Waktu Diterapkan'); }
@@ -667,6 +686,7 @@
         };
         reader.readAsDataURL(file);
     }
+    
     function removeImage() {
         currentImageBase64 = null;
         document.getElementById('trx-image').value = '';
@@ -677,7 +697,10 @@
     function handleTrxSubmit(e) {
         e.preventDefault();
         
-        const catSelected = document.getElementById('trx-category').value;
+        const catSelect = document.getElementById('trx-category');
+        if(!catSelect.value) { showToast('Kategori tidak boleh kosong!'); return; }
+        
+        const catSelected = catSelect.value;
         const nameVal = document.getElementById('trx-name').value.trim() || "-";
         
         let newTx = { 
@@ -701,7 +724,6 @@
         appData.transactions.push(newTx); 
         saveData(); 
         
-        // Reset formulir input saja, simpan tgl, kategori & lokasi
         document.getElementById('trx-name').value = '';
         document.getElementById('trx-qty').value = '';
         document.getElementById('trx-price').value = '';
@@ -718,6 +740,21 @@
         const tableEl = document.getElementById('table-all-transaksi');
         if(!tableEl) return;
         
+        if (!Array.isArray(appData.transactions)) {
+            let merged = [];
+            if (appData.transactions && typeof appData.transactions === 'object') {
+                Object.keys(appData.transactions).forEach(cat => {
+                    if (Array.isArray(appData.transactions[cat])) {
+                        appData.transactions[cat].forEach(tx => {
+                            tx.category = cat.charAt(0).toUpperCase() + cat.slice(1);
+                            merged.push(tx);
+                        });
+                    }
+                });
+            }
+            appData.transactions = merged;
+        }
+
         let allTrx = [...appData.transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
         
         if (searchTransaksiQuery) {
@@ -780,13 +817,11 @@
 
         let html = '';
         
-        // Tampilkan Lokasi
         html += `<div class="mb-4"><h4 class="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-2"><i class="fas fa-map-marker-alt text-blue-500 mr-1"></i> Data Lokasi</h4><div class="flex flex-wrap gap-2">`;
         if (locs.length === 0) html += `<span class="text-xs text-gray-400 italic">Kosong</span>`;
         else html += locs.map(l => `<span class="bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-full text-xs shadow-sm">${l}</span>`).join('');
         html += `</div></div>`;
 
-        // Tampilkan Items Berdasarkan Kategori
         cats.forEach(c => {
             const sty = getCategoryStyle(c);
             const catItems = items.filter(i => i.category === c);
@@ -801,6 +836,10 @@
             html += `</div></div>`;
         });
 
+        if (cats.length === 0 && locs.length === 0) {
+            html = `<div class="text-center text-xs text-gray-400 py-4 bg-gray-50 rounded-xl border border-dashed border-gray-200">Belum ada Master Data. Tekan <b>Tarik Data</b> untuk menyalin dari Google Spreadsheet.</div>`;
+        }
+
         container.innerHTML = html;
     }
 
@@ -812,7 +851,7 @@
     }
 
     async function syncData(isSilent = false) {
-        if(!appData.gasUrl || !appData.gasUrl.includes('/macros/s/')) { if(!isSilent) { showToast('Isi URL Cloud dulu!'); switchView('pengaturan'); } return; }
+        if(!appData.gasUrl || !appData.gasUrl.includes('/macros/s/')) { if(!isSilent) { showToast('Isi URL Cloud dulu di Setting!'); switchView('pengaturan'); } return; }
         const syncIcon = document.getElementById('sync-icon'); syncIcon.classList.add('fa-spin');
         if(!isSilent) showToast('Proses Sinkronisasi & Upload ke GDrive berjalan...');
 
@@ -824,8 +863,22 @@
             const result = await response.json();
             
             if(result.status === 'success') { 
-                appData.transactions = result.data; 
-                if(result.settings) appData.settings = result.settings; // Override settings from cloud
+                if (result.data && !Array.isArray(result.data)) {
+                    let mergedTrx = [];
+                    Object.keys(result.data).forEach(cat => {
+                        if (Array.isArray(result.data[cat])) {
+                            result.data[cat].forEach(tx => {
+                                tx.category = cat.charAt(0).toUpperCase() + cat.slice(1);
+                                mergedTrx.push(tx);
+                            });
+                        }
+                    });
+                    appData.transactions = mergedTrx;
+                } else {
+                    appData.transactions = result.data; 
+                }
+                
+                if(result.settings) appData.settings = result.settings;
                 saveData(); 
                 if(!isSilent) showToast('Aplikasi tersinkron!'); 
             } 
@@ -851,7 +904,11 @@
     }
     
     function handleEnter(e) { if(e.key === 'Enter') handleSendChat(); }
-    function scrollToChatBottom() { const container = document.getElementById('chat-box-container'); if(container) setTimeout(() => { container.scrollTop = container.scrollHeight; }, 100); }
+    
+    function scrollToChatBottom() { 
+        const container = document.getElementById('chat-box-container'); 
+        if(container) { setTimeout(() => { container.scrollTop = container.scrollHeight; }, 100); }
+    }
 
     function appendChatBubble(role, text, id = null) {
         const chatBox = document.getElementById('chat-box');
@@ -887,27 +944,19 @@
         scrollToChatBottom();
 
         try {
-            // Bangun Rangkuman Data untuk dibaca AI
-            let summaryText = "Rangkuman Data Transaksi Proyek:\n";
-            const cats = appData.settings.categories || [];
-            
-            cats.forEach(cat => {
-                let items = {}; let typeTotal = 0;
-                appData.transactions.filter(tx => tx.category === cat).forEach(tx => {
-                    let itemName = tx.name || 'Tidak Bernama';
-                    if(!items[itemName]) items[itemName] = { qty: 0, total: 0, unit: tx.unit||'' };
-                    items[itemName].qty += (parseFloat(tx.qty) || 0);
-                    items[itemName].total += (tx.total || 0); typeTotal += (tx.total || 0);
-                });
-                
-                summaryText += `[KATEGORI ${cat.toUpperCase()} - Total: Rp ${typeTotal}]\n`;
-                for(let name in items) {
-                    summaryText += `- ${name}: ${items[name].qty} ${items[name].unit} = Rp ${items[name].total}\n`;
-                }
+            // Memfilter data gambar agar tidak membuat AI Error karena teks terlalu panjang
+            const cleanTransactions = appData.transactions.map(tx => {
+                const { image, ...rest } = tx; 
+                return rest;
             });
-
-            const prompt = `${summaryText}\n\nPertanyaan: ${text}`;
-            const sysInstruction = "Anda adalah Asisten AI untuk aplikasi keuangan kontraktor. Anda akan diberikan data transaksi keuangan. Jawab dalam bahasa Indonesia yang ramah, profesional, dan akurat. Jangan gunakan kata-kata teknis coding.";
+            
+            // Menerapkan ide format JSON Anda
+            const contextData = JSON.stringify(cleanTransactions);
+            const prompt = `Ini adalah Data Keuangan Proyek saya saat ini: ${contextData}\n\nPertanyaan Saya: ${text}`;
+            
+            // INSTRUKSI SISTEM YANG DIPERTEGAS
+            const sysInstruction = "Anda adalah Asisten AI profesional khusus untuk aplikasi keuangan kontraktor. Anda akan diberikan data mentah JSON transaksi keuangan proyek. Tugas Anda HANYA menjawab pertanyaan seputar analisa keuangan proyek, material, gaji tukang, dan manajemen konstruksi dari data yang diberikan. Jika pengguna bertanya di luar konteks konstruksi dan keuangan (seperti resep masakan, kode pemrograman, hiburan, dll), tolak dengan sopan dan ingatkan bahwa Anda hanya melayani pertanyaan keuangan proyek. Jawab dalam bahasa Indonesia yang ramah, singkat, profesional, dan akurat.";
+            
             const payload = { contents: [{ parts: [{ text: prompt }] }], systemInstruction: { parts: [{ text: sysInstruction }] } };
 
             const modelRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
