@@ -364,14 +364,14 @@
     }
 
     function initApp() {
-        const savedData = localStorage.getItem('kontraktorData');
+        const savedData = localStorage.getItem('kontraktorData_app2');
         if (savedData) appData = JSON.parse(savedData);
         
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('trx-date').value = today;
         document.getElementById('setting-gas-url').value = appData.gasUrl || '';
         
-        const savedAiKey = localStorage.getItem('gemini_api_key');
+        const savedAiKey = localStorage.getItem('gemini_api_key_app2');
         if(savedAiKey) document.getElementById('setting-ai-key').value = savedAiKey;
 
         setupAutoCalcUnified();
@@ -381,7 +381,7 @@
         if (appData.gasUrl && navigator.onLine) setTimeout(() => syncData(true), 1500);
     }
 
-    function saveData() { localStorage.setItem('kontraktorData', JSON.stringify(appData)); updateUI(); }
+    function saveData() { localStorage.setItem('kontraktorData_app2', JSON.stringify(appData)); updateUI(); }
     
     function showToast(message) {
         const toast = document.getElementById('toast');
@@ -680,8 +680,8 @@
 
     function saveApiKey() {
         const key = document.getElementById('setting-ai-key').value.trim();
-        if(key) { localStorage.setItem('gemini_api_key', key); showToast('API Key Gemini Disimpan!'); } 
-        else { localStorage.removeItem('gemini_api_key'); showToast('API Key Gemini Dihapus.'); }
+        if(key) { localStorage.setItem('gemini_api_key_app2', key); showToast('API Key Gemini Disimpan!'); } 
+        else { localStorage.removeItem('gemini_api_key_app2'); showToast('API Key Gemini Dihapus.'); }
     }
 
     function handleEnter(e) { if(e.key === 'Enter') handleSendChat(); }
