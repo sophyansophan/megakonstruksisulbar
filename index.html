@@ -13,8 +13,8 @@
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; overflow-x: hidden; }
-        .app-container { max-width: 480px; margin: 0 auto; background: white; min-height: 100vh; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.05); overflow-x: hidden; }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .app-container { margin: 0 auto; min-height: 100vh; position: relative; }
         
         .view-section { display: none; padding-bottom: 110px !important; animation: fadeIn 0.3s ease-in-out; }
         .view-section.active { display: block; }
@@ -27,15 +27,9 @@
         .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 10px 20px; border-radius: 8px; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s; font-size: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); white-space: nowrap;}
         .toast.show { opacity: 1; }
         
-        @keyframes slideUp {
-            from { transform: translateY(100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .modal-content-animate { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes popIn {
-            0% { opacity: 0; transform: scale(0.9) translateY(10px); }
-            100% { opacity: 1; transform: scale(1) translateY(0); }
-        }
+        @keyframes popIn { 0% { opacity: 0; transform: scale(0.9) translateY(10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
         .chat-bubble { animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
     </style>
 </head>
@@ -43,8 +37,9 @@
 
 <div id="toast" class="toast">Notifikasi</div>
 
-<div class="app-container">
-    <!-- Header Utama -->
+<!-- Container dengan lebar responsif (Laptop, Tablet, HP) -->
+<div class="app-container w-full max-w-md md:max-w-3xl lg:max-w-5xl transition-all duration-300 bg-[#f8fafc] shadow-[0_0_20px_rgba(0,0,0,0.05)] lg:bg-transparent lg:shadow-none">
+    
     <header class="bg-blue-600 text-white p-4 sticky top-0 z-40 shadow-md">
         <div class="flex justify-between items-center">
             <h1 class="text-xl font-bold tracking-wide" id="header-title">Dashboard</h1>
@@ -54,7 +49,7 @@
         </div>
     </header>
 
-    <main id="view-dashboard" class="view-section active p-4">
+    <main id="view-dashboard" class="view-section active p-4 lg:p-6">
         <!-- Tab Lokasi Proyek -->
         <div id="dashboard-tabs" class="flex gap-2 overflow-x-auto mb-4 pb-2 hide-scrollbar items-center"></div>
 
@@ -67,210 +62,186 @@
              </button>
         </div>
 
-        <!-- Kartu Total Utama -->
-        <div class="bg-gradient-to-r from-blue-500 to-blue-700 rounded-2xl p-5 text-white shadow-lg mb-6 relative overflow-hidden">
-            <div class="absolute top-0 right-0 p-4 opacity-20"><i class="fas fa-chart-line text-6xl"></i></div>
-            <p class="text-blue-100 text-sm mb-1">Total Pengeluaran</p>
+        <div class="relative mb-5">
+            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
+            <input type="text" id="search-dashboard" oninput="handleSearchDashboard(event)" placeholder="Cari rincian transaksi..." class="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all text-gray-700">
+        </div>
+
+        <div onclick="toggleDashboardDetail('semua')" class="bg-gradient-to-r from-blue-500 to-blue-700 rounded-2xl p-5 text-white shadow-lg mb-6 relative overflow-hidden group cursor-pointer active:scale-95 transition-all">
+            <div class="absolute top-0 right-0 p-4 opacity-20 group-hover:scale-110 transition-transform"><i class="fas fa-chart-line text-6xl"></i></div>
+            <p class="text-blue-100 text-sm mb-1">Total Keseluruhan</p>
             <h2 class="text-3xl font-bold relative z-10" id="dash-total-all">Rp 0</h2>
+            <p class="text-[9px] text-blue-200 mt-2 border-t border-blue-400/30 pt-2 relative z-10"><i class="fas fa-chevron-down mr-1"></i>Klik lihat rincian gabungan</p>
         </div>
         
-        <!-- Grid Kategori -->
-        <h3 class="font-semibold text-gray-700 mb-3 flex items-center"><i class="fas fa-wallet text-blue-500 mr-2"></i>Rincian Pengeluaran</h3>
-        <div class="grid grid-cols-2 gap-4">
-            <div onclick="toggleDashboardDetail('material')" class="bg-white p-4 rounded-xl shadow border border-gray-100 relative overflow-hidden group cursor-pointer active:scale-95 transition-all hover:border-orange-200">
-                <div class="absolute -right-2 -bottom-2 opacity-10 group-hover:scale-110 transition-transform"><i class="fas fa-boxes text-5xl"></i></div>
-                <div class="text-orange-500 mb-2"><i class="fas fa-boxes fa-lg"></i></div>
-                <p class="text-xs text-gray-500 relative z-10">Material Utama</p>
-                <p class="font-bold text-gray-800 relative z-10" id="dash-total-material">Rp 0</p>
-                <p class="text-[9px] text-gray-400 mt-2 border-t border-gray-100 pt-2"><i class="fas fa-chevron-down mr-1"></i>Klik lihat rincian</p>
-            </div>
-            
-            <div onclick="toggleDashboardDetail('gaji')" class="bg-white p-4 rounded-xl shadow border border-gray-100 relative overflow-hidden group cursor-pointer active:scale-95 transition-all hover:border-green-200">
-                <div class="absolute -right-2 -bottom-2 opacity-10 group-hover:scale-110 transition-transform"><i class="fas fa-users text-5xl"></i></div>
-                <div class="text-green-500 mb-2"><i class="fas fa-users fa-lg"></i></div>
-                <p class="text-xs text-gray-500 relative z-10">Gaji Tukang</p>
-                <p class="font-bold text-gray-800 relative z-10" id="dash-total-gaji">Rp 0</p>
-                <p class="text-[9px] text-gray-400 mt-2 border-t border-gray-100 pt-2"><i class="fas fa-chevron-down mr-1"></i>Klik lihat rincian</p>
-            </div>
-            
-            <div onclick="toggleDashboardDetail('bahan')" class="bg-white p-4 rounded-xl shadow border border-gray-100 col-span-2 flex items-center justify-between relative overflow-hidden group cursor-pointer active:scale-95 transition-all hover:border-purple-200">
-                <div class="absolute -right-2 -top-2 opacity-10 group-hover:scale-110 transition-transform"><i class="fas fa-hammer text-6xl"></i></div>
-                <div class="relative z-10 w-full">
-                    <div class="flex justify-between items-center w-full">
-                        <div>
-                            <div class="text-purple-500 mb-2"><i class="fas fa-hammer fa-lg"></i></div>
-                            <p class="text-xs text-gray-500">Bahan Bangunan Lainnya</p>
-                        </div>
-                        <p class="font-bold text-gray-800 text-xl relative z-10 text-right" id="dash-total-bahan">Rp 0</p>
-                    </div>
-                    <p class="text-[9px] text-gray-400 mt-2 border-t border-gray-100 pt-2 text-center w-full"><i class="fas fa-chevron-down mr-1"></i>Klik lihat rincian</p>
-                </div>
-            </div>
-        </div>
+        <h3 class="font-semibold text-gray-700 mb-3 flex items-center"><i class="fas fa-wallet text-blue-500 mr-2"></i>Rincian Kategori</h3>
+        <!-- Grid Kategori Dinamis -->
+        <div id="dash-category-grid" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
 
-        <!-- Rincian Daftar Expandable -->
-        <div id="wrap-detail-material" class="hidden mt-6 animate-[fadeIn_0.3s_ease-in-out]">
-            <h3 class="font-semibold text-gray-700 mb-3 flex items-center"><i class="fas fa-boxes text-orange-500 mr-2"></i>Rincian Material Utama</h3>
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-2 mb-4">
-                <div id="dash-detail-material" class="divide-y divide-gray-50"></div>
-            </div>
-        </div>
-
-        <div id="wrap-detail-gaji" class="hidden mt-6 animate-[fadeIn_0.3s_ease-in-out]">
-            <h3 class="font-semibold text-gray-700 mb-3 flex items-center"><i class="fas fa-users text-green-500 mr-2"></i>Rincian Gaji Pekerja</h3>
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-2 mb-4">
-                <div id="dash-detail-gaji" class="divide-y divide-gray-50"></div>
-            </div>
-        </div>
-
-        <div id="wrap-detail-bahan" class="hidden mt-6 animate-[fadeIn_0.3s_ease-in-out]">
-            <h3 class="font-semibold text-gray-700 mb-3 flex items-center"><i class="fas fa-hammer text-purple-500 mr-2"></i>Rincian Bahan Bangunan</h3>
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-2 mb-4">
-                <div id="dash-detail-bahan" class="divide-y divide-gray-50"></div>
-            </div>
-        </div>
+        <!-- Rincian Expandable Dinamis -->
+        <div id="dash-detail-containers" class="mt-6"></div>
     </main>
 
-    <main id="view-transaksi" class="view-section p-4">
-        <!-- Form Transaksi Terpadu -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6 relative overflow-hidden">
-            <div id="trx-indicator" class="absolute top-0 left-0 w-1 h-full bg-orange-500 transition-colors duration-300"></div>
-            
-            <!-- Tab Kategori Transaksi -->
-            <div class="flex gap-2 mb-4 bg-gray-50 p-1 rounded-lg">
-                <button type="button" id="tab-trx-material" onclick="setTrxType('material')" class="flex-1 py-1.5 text-[11px] font-bold rounded-md bg-white shadow-sm transition-all border text-orange-600 border-orange-200">Material</button>
-                <button type="button" id="tab-trx-gaji" onclick="setTrxType('gaji')" class="flex-1 py-1.5 text-[11px] font-semibold rounded-md text-gray-500 hover:bg-gray-100 transition-all border border-transparent">Gaji</button>
-                <button type="button" id="tab-trx-bahan" onclick="setTrxType('bahan')" class="flex-1 py-1.5 text-[11px] font-semibold rounded-md text-gray-500 hover:bg-gray-100 transition-all border border-transparent">Bahan</button>
-            </div>
+    <main id="view-transaksi" class="view-section p-4 lg:p-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:items-start">
+            <!-- Kolom Kiri: Form Input -->
+            <div class="lg:col-span-5">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+                    <h3 class="font-semibold mb-4 border-b pb-2 text-gray-800 flex items-center"><i class="fas fa-edit text-blue-500 mr-2"></i>Input Transaksi Baru</h3>
+                    
+                    <form id="form-trx" onsubmit="handleTrxSubmit(event)">
+                        <div class="mb-3">
+                            <label class="block text-xs text-gray-500 mb-1">Kategori Transaksi *</label>
+                            <select id="trx-category" required onchange="handleCategoryChange()" class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors cursor-pointer appearance-none">
+                                <!-- Opsi dibuat dinamis -->
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="block text-xs text-gray-500 mb-1">Tanggal *</label>
+                            <input type="date" id="trx-date" required class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors cursor-pointer">
+                        </div>
+                        <div class="mb-3">
+                            <label class="block text-xs text-gray-500 mb-1">Lokasi Proyek <span class="text-[10px] text-gray-400 font-normal">(Opsional)</span></label>
+                            <input type="text" list="datalist-locations" id="trx-location" placeholder="Ketik atau pilih lokasi..." class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-xs text-gray-500 mb-1">Nama Item <span class="text-[10px] text-gray-400 font-normal">(Opsional)</span></label>
+                            <input type="text" id="trx-name" list="datalist-items" placeholder="Ketik atau pilih nama item/orang..." class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors">
+                        </div>
+                        
+                        <!-- Kalkulator Harga -->
+                        <div class="grid grid-cols-3 gap-2 mb-4 bg-gray-50 p-2 rounded-lg border border-gray-100">
+                            <div>
+                                <label class="block text-[10px] text-gray-500 mb-1">Jumlah (Qty)</label>
+                                <input type="number" step="any" id="trx-qty" placeholder="Cth: 5" class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none focus:bg-white transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-gray-500 mb-1">Harga Satuan</label>
+                                <input type="number" id="trx-price" min="0" placeholder="Rp" class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none focus:bg-white transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-blue-700 mb-1">Total Akhir</label>
+                                <input type="number" id="trx-total" min="0" required placeholder="Wajib Diisi" class="w-full border border-blue-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-blue-50 focus:bg-white transition-colors shadow-inner font-semibold text-blue-700">
+                            </div>
+                        </div>
 
-            <h3 class="font-semibold mb-3 border-b pb-2 text-gray-800 flex items-center"><i id="trx-icon" class="fas fa-boxes text-orange-500 mr-2 transition-colors duration-300"></i><span id="trx-title">Input Material</span></h3>
+                        <!-- Input Foto -->
+                        <div class="mb-5 p-3 border border-gray-200 border-dashed rounded-lg bg-gray-50">
+                            <label class="block text-xs font-semibold text-gray-700 mb-2"><i class="fas fa-camera text-gray-400 mr-1"></i> Lampirkan Bukti/Nota <span class="text-[10px] font-normal text-gray-400">(Opsional)</span></label>
+                            <div class="flex items-center gap-3">
+                                <label class="flex-1 flex flex-col items-center justify-center py-2 border border-gray-300 rounded-md cursor-pointer bg-white hover:bg-gray-100 transition-colors shadow-sm">
+                                    <i class="fas fa-upload text-blue-500 mb-1"></i>
+                                    <span class="text-[10px] text-gray-600 font-medium">Pilih Gambar</span>
+                                    <input type="file" id="trx-image" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+                                </label>
+                                <div id="image-preview-container" class="hidden relative w-14 h-14 rounded overflow-hidden border border-gray-300 shadow-sm shrink-0">
+                                    <img id="image-preview" class="w-full h-full object-cover">
+                                    <button type="button" onclick="removeImage()" class="absolute top-0 right-0 bg-red-500 bg-opacity-90 text-white w-5 h-5 flex items-center justify-center rounded-bl"><i class="fas fa-times text-[10px]"></i></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg p-3 text-sm font-bold transition-all shadow-md active:scale-95"><i class="fas fa-save mr-1"></i> Simpan Transaksi</button>
+                    </form>
+                </div>
+            </div>
             
-            <form id="form-trx" onsubmit="handleTrxSubmit(event)">
-                <div class="mb-3">
-                    <label class="block text-xs text-gray-500 mb-1">Tanggal *</label>
-                    <input type="date" id="trx-date" required class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors">
-                </div>
-                <div class="mb-3">
-                    <label class="block text-xs text-gray-500 mb-1">Lokasi Proyek <span class="text-[10px] text-gray-400 font-normal">(Opsional)</span></label>
-                    <input type="text" list="datalist-locations" id="trx-location" placeholder="Ketik atau pilih lokasi..." class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors">
-                </div>
-                <div class="mb-4">
-                    <label id="label-trx-name" class="block text-xs text-gray-500 mb-1">Nama Material <span class="text-[10px] text-gray-400 font-normal">(Opsional)</span></label>
-                    <input type="text" id="trx-name" list="datalist-materials" placeholder="Ketik atau pilih..." class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors">
+            <div class="lg:col-span-7">
+                <div class="flex flex-col gap-3 mb-3">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-semibold text-gray-700"><i class="fas fa-history text-gray-400 mr-2"></i>Histori Transaksi</h3>
+                        <div class="flex gap-1 items-center bg-white rounded-lg shadow-sm border border-gray-200 p-1">
+                            <button onclick="changePage(-1)" class="w-6 h-6 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded text-xs"><i class="fas fa-chevron-left"></i></button>
+                            <span id="transaksi-page-info" class="text-[10px] font-medium text-gray-600 px-1">Hal 1/1</span>
+                            <button onclick="changePage(1)" class="w-6 h-6 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded text-xs"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
+                        <input type="text" id="search-transaksi" oninput="handleSearchTransaksi(event)" placeholder="Cari data riwayat transaksi..." class="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all text-gray-700">
+                    </div>
                 </div>
                 
-                <!-- Kalkulator Cerdas 3 Arah (Material & Bahan) -->
-                <div id="wrap-trx-calc" class="grid grid-cols-3 gap-2 mb-4">
-                    <div>
-                        <label class="block text-[10px] text-gray-500 mb-1">Jumlah</label>
-                        <input type="number" step="any" id="trx-qty" placeholder="Cth: 5" class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] text-gray-500 mb-1">Harga Satuan</label>
-                        <input type="number" id="trx-price" min="0" class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50 focus:bg-white transition-colors">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-semibold text-gray-700 mb-1">Total Harga</label>
-                        <input type="number" id="trx-total" min="0" class="w-full border border-orange-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none bg-orange-50 focus:bg-white transition-colors shadow-inner">
-                    </div>
+                <div class="overflow-x-auto bg-white rounded-xl shadow-sm border border-gray-200">
+                    <table class="w-full text-left text-sm">
+                        <tbody id="table-all-transaksi" class="divide-y divide-gray-100"></tbody>
+                    </table>
                 </div>
-
-                <!-- Input Total (Khusus Gaji) -->
-                <div id="wrap-trx-total-only" class="mb-4 hidden">
-                    <label class="block text-xs text-gray-500 mb-1">Total Dibayar</label>
-                    <input type="number" id="trx-total-only" min="0" class="w-full border border-green-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-green-500 outline-none bg-green-50 focus:bg-white transition-colors shadow-inner">
-                </div>
-
-                <button type="submit" id="btn-trx-submit" class="w-full bg-orange-500 hover:bg-orange-600 text-white rounded-lg p-3 text-sm font-bold transition-all shadow-md active:scale-95"><i class="fas fa-save mr-1"></i> Simpan Data Material</button>
-            </form>
-        </div>
-        
-        <!-- Tabel Histori Terpadu -->
-        <div class="flex justify-between items-center mb-3">
-            <h3 class="font-semibold text-gray-700"><i class="fas fa-history text-gray-400 mr-2"></i>Histori Transaksi</h3>
-            <div class="flex gap-1 items-center bg-white rounded-lg shadow-sm border border-gray-200 p-1">
-                <button onclick="changePage(-1)" class="w-6 h-6 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded text-xs"><i class="fas fa-chevron-left"></i></button>
-                <span id="transaksi-page-info" class="text-[10px] font-medium text-gray-600 px-1">Hal 1/1</span>
-                <button onclick="changePage(1)" class="w-6 h-6 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded text-xs"><i class="fas fa-chevron-right"></i></button>
-            </div>
-        </div>
-        
-        <div class="overflow-x-auto bg-white rounded-xl shadow-sm border border-gray-200">
-            <table class="w-full text-left text-sm">
-                <tbody id="table-all-transaksi" class="divide-y divide-gray-100"></tbody>
-            </table>
-        </div>
-    </main>
-
-    <main id="view-ai" class="view-section">
-        <div class="p-4" style="padding-bottom: 80px;">
-            <div id="chat-box" class="space-y-4">
-                <div class="flex flex-col gap-1 chat-bubble">
-                    <div class="text-[10px] text-gray-400 ml-1 font-medium"><i class="fas fa-robot mr-1"></i>Gemini AI</div>
-                    <div class="bg-blue-50 text-blue-800 p-3.5 rounded-2xl rounded-tl-sm text-sm w-[85%] shadow-sm leading-relaxed">
-                        Halo Bos! Saya adalah Asisten AI. Tanya apa saja soal keuangan proyek, akan saya hitung dan analisa otomatis!
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="fixed bottom-[70px] w-full max-w-md left-1/2 transform -translate-x-1/2 bg-white border-t p-3 flex gap-2 z-30 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
-            <input type="text" id="ai-input" placeholder="Tanya total semen bulan ini..." class="flex-1 border border-gray-300 rounded-full px-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" onkeypress="handleEnter(event)">
-            <button onclick="handleSendChat()" class="w-11 h-11 bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-full flex items-center justify-center shrink-0 shadow-md hover:shadow-lg transition-all active:scale-95">
-                <i class="fas fa-paper-plane"></i>
-            </button>
-        </div>
-    </main>
-
-    <main id="view-pengaturan" class="view-section p-4">
-        <!-- Pengaturan Cloud -->
-        <div class="bg-blue-50 p-4 rounded-xl mb-4 border border-blue-100 text-sm text-blue-800 leading-relaxed shadow-sm">
-            <strong class="block mb-1"><i class="fas fa-cloud text-blue-600 mr-1"></i> Cloud Sinkronisasi:</strong> 
-            Masukkan URL Web App Google Apps Script untuk menghubungkan data ke Spreadsheet.
-        </div>
-        
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
-            <label class="block text-xs font-bold text-gray-700 mb-1">URL Web App Google Apps Script</label>
-            <input type="text" id="setting-gas-url" placeholder="https://script.google.com/macros/s/..." class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none mb-3 bg-gray-50 focus:bg-white transition-colors">
-            <div class="grid grid-cols-2 gap-2">
-                <button onclick="saveGasUrl()" class="w-full bg-gray-800 text-white rounded-lg py-2 text-sm font-medium hover:bg-gray-700 transition flex items-center justify-center shadow-sm"><i class="fas fa-save mr-1"></i> Simpan URL</button>
-                <button onclick="pullDataFromCloud()" class="w-full bg-indigo-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-indigo-700 transition flex items-center justify-center shadow-sm"><i class="fas fa-cloud-download-alt mr-1"></i> Tarik Data</button>
-            </div>
-        </div>
-
-        <!-- Pengaturan AI -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
-            <h3 class="font-semibold mb-2 text-sm text-gray-700 border-b pb-2"><i class="fas fa-sparkles text-amber-500 mr-2"></i>Pengaturan AI Assistant</h3>
-            <label class="block text-[11px] text-gray-500 mb-1">API Key Gemini Google (Gratis)</label>
-            <input type="password" id="setting-ai-key" placeholder="Ketik/Paste API Key di sini..." class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none mb-2 bg-gray-50 focus:bg-white transition-colors">
-            <button onclick="saveApiKey()" class="w-full bg-amber-500 text-white rounded-lg py-2 text-sm font-medium hover:bg-amber-600 transition flex items-center justify-center shadow-sm"><i class="fas fa-key mr-1"></i> Simpan API Key</button>
-        </div>
-
-        <!-- Daftar Master Read-Only -->
-        <div class="space-y-4">
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-                <h3 class="font-semibold mb-2 text-sm text-gray-700 border-b pb-2 flex justify-between"><span><i class="fas fa-map-marker-alt text-blue-500 mr-2"></i>Lokasi Proyek</span></h3>
-                <div id="list-locations" class="flex flex-wrap gap-2"></div>
-            </div>
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-                <h3 class="font-semibold mb-2 text-sm text-gray-700 border-b pb-2 flex justify-between"><span><i class="fas fa-boxes text-orange-500 mr-2"></i>Master Material</span></h3>
-                <div id="list-materials" class="flex flex-wrap gap-2"></div>
-            </div>
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-                <h3 class="font-semibold mb-2 text-sm text-gray-700 border-b pb-2 flex justify-between"><span><i class="fas fa-hammer text-purple-500 mr-2"></i>Bahan Bangunan</span></h3>
-                <div id="list-supplies" class="flex flex-wrap gap-2"></div>
-            </div>
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-                <h3 class="font-semibold mb-2 text-sm text-gray-700 border-b pb-2 flex justify-between"><span><i class="fas fa-users text-green-500 mr-2"></i>Gaji Tukang</span></h3>
-                <div id="list-workers" class="flex flex-wrap gap-2"></div>
-            </div>
-            <div class="text-[10px] text-gray-400 text-center italic mt-2">
-                *Data Master hanya bisa ditambah/dihapus melalui Google Spreadsheet. Klik tombol "Tarik Data" untuk memperbarui.
             </div>
         </div>
     </main>
 
-    <!-- Modal Riwayat Dashboard -->
+    <main id="view-ai" class="view-section lg:p-6" style="padding-bottom: 75px !important;">
+        <div class="flex flex-col h-[calc(100vh-150px)] lg:h-[calc(100vh-180px)] lg:max-w-4xl lg:mx-auto bg-[#f8fafc] lg:bg-white lg:rounded-2xl lg:shadow-md lg:border lg:border-gray-200 relative overflow-hidden">
+            <div class="hidden lg:flex bg-gradient-to-r from-blue-600 to-indigo-600 p-4 items-center gap-3 text-white shadow-sm z-10">
+                <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm"><i class="fas fa-robot text-xl"></i></div>
+                <div>
+                    <h3 class="font-bold text-lg leading-tight">Gemini AI Assistant</h3>
+                    <p class="text-xs text-blue-100">Analisa keuangan & ringkasan otomatis</p>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-4 pb-20 scroll-smooth" id="chat-box-container">
+                <div id="chat-box" class="space-y-4 w-full flex flex-col items-start">
+                    <div class="flex flex-col gap-1 chat-bubble self-start w-full">
+                        <div class="text-[10px] text-gray-400 ml-1 font-medium"><i class="fas fa-robot mr-1"></i>Gemini AI</div>
+                        <div class="bg-blue-50 border border-blue-100 text-blue-800 p-3.5 rounded-2xl rounded-tl-sm text-sm shadow-sm leading-relaxed max-w-[85%] inline-block">
+                            Halo Bos! Saya adalah Asisten AI Anda. Tanya apa saja soal keuangan proyek, misal: "Berapa total biaya semen bulan ini?"
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 flex gap-2 z-30 lg:px-4 lg:py-4 shadow-[0_-5px_15px_rgba(0,0,0,0.02)]">
+                <input type="text" id="ai-input" placeholder="Ketik pertanyaan di sini..." class="flex-1 border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 transition-shadow shadow-inner" onkeypress="handleEnter(event)">
+                <button onclick="handleSendChat()" class="w-11 h-11 bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-full flex items-center justify-center shrink-0 shadow-md hover:shadow-lg transition-all active:scale-95">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <main id="view-pengaturan" class="view-section p-4 lg:p-6">
+        <div class="lg:max-w-5xl lg:mx-auto lg:bg-white lg:rounded-2xl lg:shadow-md lg:border lg:border-gray-200 lg:p-6 lg:min-h-[calc(100vh-200px)]">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:items-start">
+                <div class="lg:col-span-5">
+                    <div class="bg-blue-50 p-4 rounded-xl mb-4 border border-blue-100 text-sm text-blue-800 leading-relaxed shadow-sm">
+                        <strong class="block mb-1"><i class="fas fa-cloud text-blue-600 mr-1"></i> Cloud Sinkronisasi</strong> 
+                        Terhubung ke Spreadsheet (1 Sheet Tunggal untuk Semua Transaksi).
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+                        <label class="block text-xs font-bold text-gray-700 mb-1">URL Web App Google Apps Script</label>
+                        <input type="text" id="setting-gas-url" placeholder="https://script.google.com/macros/s/..." class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none mb-3 bg-gray-50 focus:bg-white transition-colors">
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="saveGasUrl()" class="w-full bg-gray-800 text-white rounded-lg py-2 text-sm font-medium hover:bg-gray-700 transition flex items-center justify-center shadow-sm"><i class="fas fa-save mr-1"></i> Simpan URL</button>
+                            <button onclick="pullDataFromCloud()" class="w-full bg-indigo-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-indigo-700 transition flex items-center justify-center shadow-sm"><i class="fas fa-cloud-download-alt mr-1"></i> Tarik Data</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+                        <h3 class="font-semibold mb-2 text-sm text-gray-700 border-b pb-2"><i class="fas fa-sparkles text-amber-500 mr-2"></i>Pengaturan AI Assistant</h3>
+                        <label class="block text-[11px] text-gray-500 mb-1">API Key Gemini Google (Gratis)</label>
+                        <input type="password" id="setting-ai-key" placeholder="Ketik/Paste API Key di sini..." class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none mb-2 bg-gray-50 focus:bg-white transition-colors">
+                        <button onclick="saveApiKey()" class="w-full bg-amber-500 text-white rounded-lg py-2 text-sm font-medium hover:bg-amber-600 transition flex items-center justify-center shadow-sm"><i class="fas fa-key mr-1"></i> Simpan API Key</button>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-7 space-y-4 mb-6">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                        <h3 class="font-semibold mb-3 text-sm text-gray-700 border-b pb-2"><i class="fas fa-database text-blue-500 mr-2"></i>Data Master (Dari Spreadsheet)</h3>
+                        <div id="list-master-settings" class="space-y-4"></div>
+                    </div>
+                    <div class="text-[10px] text-gray-400 text-center italic mt-2">
+                        *Data Master (Lokasi & Kategori Item) diambil otomatis dari Google Spreadsheet saat Anda menekan tombol "Tarik Data".
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
     <div id="history-modal" class="fixed inset-0 bg-black bg-opacity-60 z-[100] hidden items-end sm:items-center justify-center backdrop-blur-sm">
         <div class="bg-gray-50 w-full sm:max-w-sm max-h-[85vh] rounded-t-2xl sm:rounded-2xl flex flex-col shadow-2xl modal-content-animate overflow-hidden">
             <div class="bg-white p-4 border-b border-gray-200 flex justify-between items-start shadow-sm z-10">
@@ -281,7 +252,6 @@
         </div>
     </div>
 
-    <!-- Modal Filter Waktu -->
     <div id="date-filter-modal" class="fixed inset-0 bg-black bg-opacity-60 z-[100] hidden items-end sm:items-center justify-center backdrop-blur-sm">
         <div class="bg-white w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl flex flex-col shadow-2xl modal-content-animate overflow-hidden p-5">
             <div class="flex justify-between items-center mb-4 border-b pb-3 border-gray-100">
@@ -299,8 +269,7 @@
         </div>
     </div>
 
-    <!-- Navigasi Bawah Terpadu -->
-    <nav class="fixed bottom-0 w-full max-w-md bg-white border-t border-gray-200 flex justify-around pb-4 pt-2 px-1 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] z-40">
+    <nav class="fixed bottom-0 w-full max-w-md md:max-w-3xl lg:max-w-5xl left-1/2 transform -translate-x-1/2 bg-white border-t border-gray-200 flex justify-around pb-4 pt-2 px-1 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] z-40">
         <button onclick="switchView('dashboard')" class="nav-btn flex flex-col items-center p-2 text-gray-400 hover:text-blue-600 transition-colors" data-target="dashboard"><i class="fas fa-chart-pie text-lg mb-1"></i><span class="text-[9px] font-medium">Dashboard</span></button>
         <button onclick="switchView('transaksi')" class="nav-btn flex flex-col items-center p-2 text-gray-400 hover:text-blue-600 transition-colors" data-target="transaksi"><i class="fas fa-edit text-lg mb-1"></i><span class="text-[9px] font-medium">Transaksi</span></button>
         <button onclick="switchView('ai')" class="nav-btn flex flex-col items-center p-2 text-gray-400 hover:text-indigo-500 transition-colors" data-target="ai"><i class="fas fa-robot text-lg mb-1"></i><span class="text-[9px] font-medium">AI Chat</span></button>
@@ -309,24 +278,34 @@
 
     <!-- Global Datalists -->
     <datalist id="datalist-locations"></datalist>
-    <datalist id="datalist-materials"></datalist>
-    <datalist id="datalist-workers"></datalist>
-    <datalist id="datalist-supplies"></datalist>
+    <datalist id="datalist-items"></datalist>
 </div>
 
 <script>
+    // Struktur Data Baru (Single Table)
     let appData = {
-        transactions: { material: [], gaji: [], bahan: [] },
-        settings: { locations: ['Proyek Utama'], materials: [{name: 'Semen', unit: 'sak'}, {name: 'Pasir', unit: 'res'}], workers: ['Pak Budi'], supplies: [{name: 'Paku', unit: 'kg'}] },
-        gasUrl: ''
+        transactions: [], // Format tunggal
+        settings: { 
+            locations: ['Proyek Utama'], 
+            categories: ['Material', 'Gaji', 'Bahan'],
+            items: [
+                { category: 'Material', name: 'Semen', unit: 'sak' },
+                { category: 'Gaji', name: 'Tukang Harian', unit: 'hari' },
+                { category: 'Bahan', name: 'Paku', unit: 'kg' }
+            ] 
+        },
+        gasUrl: 'https://script.google.com/macros/s/AKfycbxs_4Dzu8PQlWOKvN6ThN8e-iWgkzDQUl71nhIzH-NMLKyousNP-x9BXw0_eRK8a4lhtA/exec'
     };
 
     let currentDashboardLocation = 'Semua';
     let filterStartDate = '';
     let filterEndDate = '';
-    let trxCurrentType = 'material';
+    
     let trxCurrentPage = 1;
     let trxItemsPerPage = 10;
+    let searchDashboardQuery = '';
+    let searchTransaksiQuery = '';
+    let currentImageBase64 = null;
 
     const formatRp = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka || 0);
     const formatDate = (dateStr) => {
@@ -336,36 +315,52 @@
         return `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear().toString().substring(2,4)}`;
     };
 
-    function setupAutoCalcUnified() {
-        const qtyEl = document.getElementById(`trx-qty`);
-        const priceEl = document.getElementById(`trx-price`);
-        const totalEl = document.getElementById(`trx-total`);
-
-        const calc = (changed) => {
-            let q = parseFloat(qtyEl.value);
-            let p = parseFloat(priceEl.value);
-            let t = parseFloat(totalEl.value);
-
-            if (changed === 'qty' && !isNaN(q)) {
-                if (!isNaN(p)) totalEl.value = Math.round(q * p);
-                else if (!isNaN(t) && q !== 0) priceEl.value = Math.round(t / q);
-            } else if (changed === 'price' && !isNaN(p)) {
-                if (!isNaN(q)) totalEl.value = Math.round(q * p);
-                else if (!isNaN(t) && p !== 0) qtyEl.value = (t / p).toFixed(2).replace(/\.00$/, '');
-            } else if (changed === 'total' && !isNaN(t)) {
-                if (!isNaN(q) && q !== 0) priceEl.value = Math.round(t / q);
-                else if (!isNaN(p) && p !== 0) qtyEl.value = (t / p).toFixed(2).replace(/\.00$/, '');
-            }
-        };
-
-        qtyEl.addEventListener('input', () => calc('qty'));
-        priceEl.addEventListener('input', () => calc('price'));
-        totalEl.addEventListener('input', () => calc('total'));
+    // Pembangkit Gaya Warna Ikon Berdasarkan Nama Kategori (Otomatis)
+    function getCategoryStyle(catName) {
+        const name = (catName || '').toLowerCase();
+        if(name.includes('material')) return { icon: 'fa-boxes', text: 'text-orange-600', bg: 'bg-orange-50', border: 'border-orange-200', btn: 'bg-orange-500' };
+        if(name.includes('gaji') || name.includes('upah') || name.includes('tukang')) return { icon: 'fa-users', text: 'text-green-600', bg: 'bg-green-50', border: 'border-green-200', btn: 'bg-green-600' };
+        if(name.includes('bahan') || name.includes('alat')) return { icon: 'fa-hammer', text: 'text-purple-600', bg: 'bg-purple-50', border: 'border-purple-200', btn: 'bg-purple-500' };
+        if(name.includes('operasional') || name.includes('umum')) return { icon: 'fa-receipt', text: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200', btn: 'bg-blue-500' };
+        return { icon: 'fa-tag', text: 'text-rose-600', bg: 'bg-rose-50', border: 'border-rose-200', btn: 'bg-rose-500' };
     }
 
     function initApp() {
         const savedData = localStorage.getItem('kontraktorData_app2');
-        if (savedData) appData = JSON.parse(savedData);
+        if (savedData) {
+            let parsed = JSON.parse(savedData);
+            
+            // LOGIKA MIGRASI: Otomatis memindahkan format 3 array lama menjadi format 1 array baru
+            if (parsed.transactions && !Array.isArray(parsed.transactions)) {
+                let mergedTrx = [];
+                ['material', 'gaji', 'bahan'].forEach(cat => {
+                    if (parsed.transactions[cat]) {
+                        parsed.transactions[cat].forEach(tx => {
+                            tx.category = cat.charAt(0).toUpperCase() + cat.slice(1);
+                            mergedTrx.push(tx);
+                        });
+                    }
+                });
+                parsed.transactions = mergedTrx;
+                
+                let newItems = [];
+                if(parsed.settings.materials) parsed.settings.materials.forEach(m => newItems.push({category: 'Material', name: m.name||m, unit: m.unit||''}));
+                if(parsed.settings.workers) parsed.settings.workers.forEach(w => newItems.push({category: 'Gaji', name: w.name||w, unit: ''}));
+                if(parsed.settings.supplies) parsed.settings.supplies.forEach(s => newItems.push({category: 'Bahan', name: s.name||s, unit: s.unit||''}));
+                parsed.settings.items = newItems;
+                parsed.settings.categories = ['Material', 'Gaji', 'Bahan'];
+                
+                delete parsed.settings.materials;
+                delete parsed.settings.workers;
+                delete parsed.settings.supplies;
+                
+                appData = parsed;
+                saveData(); // Simpan format baru
+            } else {
+                appData = parsed;
+            }
+            if (!appData.gasUrl) appData.gasUrl = 'https://script.google.com/macros/s/AKfycbxs_4Dzu8PQlWOKvN6ThN8e-iWgkzDQUl71nhIzH-NMLKyousNP-x9BXw0_eRK8a4lhtA/exec';
+        }
         
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('trx-date').value = today;
@@ -375,10 +370,10 @@
         if(savedAiKey) document.getElementById('setting-ai-key').value = savedAiKey;
 
         setupAutoCalcUnified();
-
         updateUI();
         switchView('dashboard');
-        if (appData.gasUrl && navigator.onLine) setTimeout(() => syncData(true), 1500);
+        
+        if (appData.gasUrl && navigator.onLine) setTimeout(() => syncData(true), 2000);
     }
 
     function saveData() { localStorage.setItem('kontraktorData_app2', JSON.stringify(appData)); updateUI(); }
@@ -395,30 +390,40 @@
         
         document.querySelectorAll('.nav-btn').forEach(btn => {
             btn.classList.remove('text-blue-600', 'text-indigo-500');
-            if(btn.dataset.target === viewId) {
-                btn.classList.add(viewId === 'ai' ? 'text-indigo-500' : 'text-blue-600');
-            }
+            if(btn.dataset.target === viewId) btn.classList.add(viewId === 'ai' ? 'text-indigo-500' : 'text-blue-600');
         });
         
-        const titles = { 'dashboard': 'Dashboard Proyek', 'transaksi': 'Input Transaksi', 'ai': 'AI Assistant', 'pengaturan': 'Pengaturan Sistem' };
+        const titles = { 'dashboard': 'Dashboard Proyek', 'transaksi': 'Data Transaksi', 'ai': 'AI Assistant', 'pengaturan': 'Pengaturan Sistem' };
         document.getElementById('header-title').textContent = titles[viewId];
         window.scrollTo(0, 0);
     }
 
     function updateUI() {
-        updateDropdowns(); renderSemuaTransaksi(); renderDashboardTabs();
-        updateDateFilterLabel(); updateDashboard(); updateSettingsMaster();
+        // Render Datalist Lokasi
+        const dlLoc = document.getElementById('datalist-locations');
+        if(dlLoc) dlLoc.innerHTML = (appData.settings.locations || []).map(l => `<option value="${l}">`).join('');
+        
+        // Render Select Kategori di Input Form
+        const catSelect = document.getElementById('trx-category');
+        const cats = appData.settings.categories || [];
+        const currentSelected = catSelect.value;
+        catSelect.innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('');
+        if(cats.includes(currentSelected)) catSelect.value = currentSelected;
+        
+        handleCategoryChange(); // Refresh datalist nama item
+        
+        renderSemuaTransaksi();
+        renderDashboardTabs();
+        updateDateFilterLabel(); 
+        updateDashboard(); 
+        updateSettingsMaster();
     }
 
-    function updateDropdowns() {
-        const fillDatalist = (id, dataArr) => {
-            const dl = document.getElementById(id);
-            if(dl) dl.innerHTML = dataArr.map(item => `<option value="${item.name || item}">`).join('');
-        };
-        fillDatalist('datalist-materials', appData.settings.materials);
-        fillDatalist('datalist-supplies', appData.settings.supplies);
-        fillDatalist('datalist-workers', appData.settings.workers);
-        fillDatalist('datalist-locations', appData.settings.locations || []);
+    function handleCategoryChange() {
+        const cat = document.getElementById('trx-category').value;
+        const dlItems = document.getElementById('datalist-items');
+        const items = (appData.settings.items || []).filter(i => i.category === cat);
+        dlItems.innerHTML = items.map(i => `<option value="${i.name}">`).join('');
     }
 
     function renderDashboardTabs() {
@@ -436,6 +441,181 @@
         if(activeBtn) activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     }
 
+    function handleSearchDashboard(e) { searchDashboardQuery = e.target.value.toLowerCase(); updateDashboard(); }
+
+    function updateDashboard() {
+        document.getElementById('dash-lokasi-title').textContent = currentDashboardLocation === 'Semua' ? 'Keseluruhan Proyek' : `Proyek: ${currentDashboardLocation}`;
+        
+        const filteredTx = appData.transactions.filter(tx => {
+            let matchLoc = currentDashboardLocation === 'Semua' ? true : (tx.location || 'Umum') === currentDashboardLocation;
+            let matchDate = true;
+            if (filterStartDate) matchDate = matchDate && tx.date >= filterStartDate;
+            if (filterEndDate) matchDate = matchDate && tx.date <= filterEndDate;
+            let matchSearch = true;
+            if (searchDashboardQuery) matchSearch = (tx.name || '').toLowerCase().includes(searchDashboardQuery) || (tx.location || '').toLowerCase().includes(searchDashboardQuery) || (tx.category || '').toLowerCase().includes(searchDashboardQuery);
+            return matchLoc && matchDate && matchSearch;
+        });
+
+        // Hitung Grand Total
+        const totalAll = filteredTx.reduce((acc, curr) => acc + (curr.total || 0), 0);
+        document.getElementById('dash-total-all').textContent = formatRp(totalAll);
+
+        // Kumpulkan data per kategori
+        const catSummary = {};
+        filteredTx.forEach(tx => {
+            let c = tx.category || 'Lainnya';
+            if(!catSummary[c]) catSummary[c] = { cost: 0, items: {} };
+            catSummary[c].cost += (tx.total || 0);
+            
+            let n = tx.name || 'Tidak Bernama';
+            if(!catSummary[c].items[n]) catSummary[c].items[n] = { cost: 0, qty: 0, unit: tx.unit || '' };
+            catSummary[c].items[n].cost += (tx.total || 0);
+            catSummary[c].items[n].qty += (parseFloat(tx.qty) || 1); // fallback 1 jika qty kosong
+        });
+
+        // Generate Kartu Dashboard Dinamis
+        const gridEl = document.getElementById('dash-category-grid');
+        const detailEl = document.getElementById('dash-detail-containers');
+        const activeCategories = appData.settings.categories.concat(Object.keys(catSummary)).filter((item, pos, self) => self.indexOf(item) == pos); // Unik
+        
+        let gridHtml = ''; let detailHtml = '';
+        
+        // Rincian Expandable: SEMUA PENGELUARAN
+        detailHtml += `
+        <div id="wrap-detail-semua" class="hidden animate-[fadeIn_0.3s_ease-in-out]">
+            <h3 class="font-semibold text-gray-700 mb-3 flex items-center"><i class="fas fa-list-alt text-blue-500 mr-2"></i>Rincian Semua Pengeluaran</h3>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-2 mb-4">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                    ${filteredTx.length === 0 ? '<div class="text-center text-xs text-gray-400 py-4 col-span-2">Tidak ada data</div>' : 
+                      filteredTx.map(tx => {
+                          const sty = getCategoryStyle(tx.category);
+                          return `<div onclick="showItemHistory('${tx.category}', '${tx.name}')" class="flex justify-between items-center py-3 px-3 cursor-pointer rounded-lg hover:bg-gray-50 transition group border border-gray-100 bg-white shadow-sm">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg ${sty.bg} ${sty.text} flex items-center justify-center border ${sty.border}"><i class="fas ${sty.icon} text-xs"></i></div>
+                                <div><p class="font-medium text-sm text-gray-800">${tx.name || '-'}</p><p class="text-[10px] text-gray-500">${tx.qty} ${tx.unit||''} &bull; ${tx.category}</p></div>
+                            </div>
+                            <div class="font-semibold text-sm text-gray-800">${formatRp(tx.total)}</div>
+                          </div>`;
+                      }).join('')
+                    }
+                </div>
+            </div>
+        </div>`;
+
+        activeCategories.forEach((cat, index) => {
+            const sty = getCategoryStyle(cat);
+            const totalCat = catSummary[cat] ? catSummary[cat].cost : 0;
+            
+            // Kartu Grid (Elemen ke-3 dibuat lebar di versi HP)
+            const colSpan = (index === 2 && activeCategories.length % 2 !== 0) ? 'col-span-2 md:col-span-1 flex items-center justify-between' : 'flex flex-col';
+            const textRight = colSpan.includes('justify-between') ? 'text-right md:text-left md:mt-1' : '';
+            const wrapClass = colSpan.includes('justify-between') ? 'flex justify-between items-center w-full md:flex-col md:items-start' : '';
+
+            gridHtml += `
+            <div onclick="toggleDashboardDetail('${cat.replace(/\s+/g,'-')}')" class="bg-white p-4 rounded-xl shadow border border-gray-100 relative overflow-hidden group cursor-pointer active:scale-95 transition-all hover:${sty.border} ${colSpan}">
+                <div class="absolute -right-2 -bottom-2 opacity-10"><i class="fas ${sty.icon} text-5xl"></i></div>
+                <div class="relative z-10 w-full">
+                    <div class="${wrapClass}">
+                        <div>
+                            <div class="${sty.text} mb-2"><i class="fas ${sty.icon} fa-lg"></i></div>
+                            <p class="text-xs text-gray-500 font-medium">${cat}</p>
+                        </div>
+                        <p class="font-bold text-gray-800 text-lg ${textRight}">${formatRp(totalCat)}</p>
+                    </div>
+                </div>
+            </div>`;
+
+            // Daftar Rincian Expandable per Kategori
+            const itemsObj = catSummary[cat] ? catSummary[cat].items : {};
+            const itemsKeys = Object.keys(itemsObj).sort((a,b) => itemsObj[b].cost - itemsObj[a].cost);
+            
+            detailHtml += `
+            <div id="wrap-detail-${cat.replace(/\s+/g,'-')}" class="hidden animate-[fadeIn_0.3s_ease-in-out]">
+                <h3 class="font-semibold text-gray-700 mb-3 flex items-center"><i class="fas ${sty.icon} ${sty.text} mr-2"></i>Rincian ${cat}</h3>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-2 mb-4">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                        ${itemsKeys.length === 0 ? '<div class="text-center text-xs text-gray-400 py-4 col-span-2">Tidak ada data</div>' : 
+                          itemsKeys.map(name => {
+                              let it = itemsObj[name];
+                              let info = (cat.toLowerCase().includes('gaji')) ? `Jml: ${it.qty} kali` : `Jml: ${it.qty} ${it.unit}`;
+                              return `<div onclick="showItemHistory('${cat}', '${name}')" class="flex justify-between items-center py-3 px-3 cursor-pointer rounded-lg hover:bg-gray-50 transition border border-gray-100 bg-white shadow-sm">
+                                <div><p class="font-medium text-sm text-gray-800">${name}</p><p class="text-[10px] text-gray-500">${info}</p></div>
+                                <div class="flex items-center gap-3"><span class="font-semibold text-sm text-gray-800">${formatRp(it.cost)}</span><i class="fas fa-chevron-right text-gray-300 text-xs"></i></div>
+                              </div>`;
+                          }).join('')
+                        }
+                    </div>
+                </div>
+            </div>`;
+        });
+
+        gridEl.innerHTML = gridHtml;
+        detailEl.innerHTML = detailHtml;
+    }
+
+    function toggleDashboardDetail(targetId) {
+        // Sembunyikan semua wrap detail
+        const containers = document.getElementById('dash-detail-containers').children;
+        let wasHidden = false;
+        
+        for(let i=0; i<containers.length; i++) {
+            if (containers[i].id === `wrap-detail-${targetId}`) {
+                wasHidden = containers[i].classList.contains('hidden');
+            }
+            containers[i].classList.add('hidden');
+        }
+
+        if (wasHidden) { 
+            const tgt = document.getElementById(`wrap-detail-${targetId}`);
+            tgt.classList.remove('hidden'); 
+            setTimeout(() => tgt.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50); 
+        }
+    }
+
+    function showItemHistory(catName, itemName) {
+        const modal = document.getElementById('history-modal');
+        const sty = getCategoryStyle(catName);
+        const subTitleLocation = currentDashboardLocation === 'Semua' ? 'Semua Proyek' : `${currentDashboardLocation}`;
+
+        document.getElementById('history-modal-title').innerHTML = `<div><span class="text-[10px] text-gray-400 font-semibold uppercase block mb-1">Riwayat: ${subTitleLocation}</span><div class="flex items-center text-lg font-bold text-gray-800"><i class="fas ${sty.icon} ${sty.text} mr-2"></i> ${itemName || '-'}</div></div>`;
+        
+        const historyData = appData.transactions.filter(tx => {
+            let matchCat = tx.category === catName;
+            let matchName = tx.name === itemName;
+            let matchLoc = currentDashboardLocation === 'Semua' ? true : (tx.location || 'Umum') === currentDashboardLocation;
+            let matchDate = true;
+            if (filterStartDate) matchDate = matchDate && tx.date >= filterStartDate;
+            if (filterEndDate) matchDate = matchDate && tx.date <= filterEndDate;
+            return matchCat && matchName && matchLoc && matchDate;
+        });
+        
+        const content = document.getElementById('history-modal-content');
+        if (historyData.length === 0) content.innerHTML = `<div class="text-center text-xs text-gray-500 py-10">Belum ada riwayat tercatat</div>`;
+        else {
+            content.innerHTML = '<div class="space-y-3">' + [...historyData].reverse().map(tx => {
+                let tagLokasi = (currentDashboardLocation === 'Semua' && tx.location) ? `<span class="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded ml-2 border border-gray-200"><i class="fas fa-map-marker-alt"></i> ${tx.location}</span>` : '';
+                let detailText = `Qty: <span class="font-bold text-gray-700">${tx.qty} ${tx.unit||''}</span> <span class="text-gray-300 mx-1">|</span> @${formatRp(tx.price)}`;
+                
+                let imgHtml = tx.image ? `<a href="${tx.image}" target="_blank" class="mt-2 text-[10px] bg-blue-50 text-blue-600 px-2 py-1 rounded inline-flex items-center gap-1 border border-blue-200 hover:bg-blue-100"><i class="fas fa-image"></i> Lihat Foto Bukti</a>` : '';
+
+                return `
+                    <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden flex justify-between items-start">
+                        <div class="absolute left-0 top-0 bottom-0 w-1 ${sty.btn}"></div>
+                        <div class="pl-3">
+                            <p class="text-xs font-semibold text-gray-500 mb-1"><i class="far fa-calendar-alt mr-1"></i>${formatDate(tx.date)} ${tagLokasi}</p>
+                            <p class="text-[11px] text-gray-500">${detailText}</p>
+                            ${imgHtml}
+                        </div>
+                        <div class="font-bold text-gray-800 text-sm text-right">${formatRp(tx.total)}</div>
+                    </div>`;
+            }).join('') + '</div>';
+        }
+        modal.classList.replace('hidden','flex');
+    }
+    
+    function closeHistoryModal() { document.getElementById('history-modal').classList.replace('flex','hidden'); }
+
+    // Filter Waktu
     function openDateFilterModal() { document.getElementById('filter-start').value = filterStartDate; document.getElementById('filter-end').value = filterEndDate; document.getElementById('date-filter-modal').classList.replace('hidden','flex'); }
     function closeDateFilterModal() { document.getElementById('date-filter-modal').classList.replace('flex','hidden'); }
     function applyDateFilter() { filterStartDate = document.getElementById('filter-start').value; filterEndDate = document.getElementById('filter-end').value; closeDateFilterModal(); updateUI(); showToast('Filter Waktu Diterapkan'); }
@@ -448,220 +628,130 @@
         else if (filterEndDate) lbl.textContent = `S/d ${formatDate(filterEndDate)}`;
     }
 
-    function toggleDashboardDetail(type) {
-        const wrap = document.getElementById(`wrap-detail-${type}`);
-        const isHidden = wrap.classList.contains('hidden');
-        ['material', 'gaji', 'bahan'].forEach(t => document.getElementById(`wrap-detail-${t}`).classList.add('hidden'));
-        if (isHidden) { wrap.classList.remove('hidden'); setTimeout(() => wrap.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50); }
-    }
-
-    function updateDashboard() {
-        document.getElementById('dash-lokasi-title').textContent = currentDashboardLocation === 'Semua' ? 'Keseluruhan Proyek' : `Proyek: ${currentDashboardLocation}`;
-        const getFilteredTx = (type) => appData.transactions[type].filter(tx => {
-            let matchLoc = currentDashboardLocation === 'Semua' ? true : (tx.location || 'Umum') === currentDashboardLocation;
-            let matchDate = true;
-            if (filterStartDate) matchDate = matchDate && tx.date >= filterStartDate;
-            if (filterEndDate) matchDate = matchDate && tx.date <= filterEndDate;
-            return matchLoc && matchDate;
-        });
-
-        const totMaterial = getFilteredTx('material').reduce((acc, curr) => acc + curr.total, 0);
-        const totGaji = getFilteredTx('gaji').reduce((acc, curr) => acc + curr.total, 0);
-        const totBahan = getFilteredTx('bahan').reduce((acc, curr) => acc + curr.total, 0);
+    function setupAutoCalcUnified() {
+        const qtyEl = document.getElementById(`trx-qty`); 
+        const priceEl = document.getElementById(`trx-price`); 
+        const totalEl = document.getElementById(`trx-total`);
         
-        document.getElementById('dash-total-all').textContent = formatRp(totMaterial + totGaji + totBahan);
-        document.getElementById('dash-total-material').textContent = formatRp(totMaterial);
-        document.getElementById('dash-total-gaji').textContent = formatRp(totGaji);
-        document.getElementById('dash-total-bahan').textContent = formatRp(totBahan);
-
-        const renderRincian = (type, containerId) => {
-            const summary = {};
-            getFilteredTx(type).forEach(tx => {
-                if(!summary[tx.name]) summary[tx.name] = { cost: 0, count: 0, unit: tx.unit || '' };
-                summary[tx.name].cost += tx.total;
-                summary[tx.name].count += (type === 'gaji') ? 1 : parseFloat(tx.qty || 1);
-                if(tx.unit && !summary[tx.name].unit) summary[tx.name].unit = tx.unit;
-            });
-
-            const container = document.getElementById(containerId);
-            if(Object.keys(summary).length === 0) {
-                container.innerHTML = `<div class="text-center text-xs text-gray-400 py-4 bg-gray-50 rounded-lg">Tidak ada data untuk lokasi/waktu ini</div>`;
-            } else {
-                container.innerHTML = Object.keys(summary).map(name => {
-                    let subText = type === 'gaji' ? `Dibayar: <span class="font-bold text-gray-700">${summary[name].count} kali</span>` : `Terkumpul: <span class="font-bold text-gray-700">${summary[name].count} ${summary[name].unit}</span>`;
-                    return `
-                        <div onclick="showItemHistory('${type}', '${name}')" class="flex justify-between items-center py-3 px-3 cursor-pointer rounded-lg hover:bg-blue-50 active:bg-blue-100 transition-colors group border-b border-gray-50 last:border-0">
-                            <div>
-                                <p class="font-medium text-sm text-gray-800 group-hover:text-blue-700 transition-colors">${name}</p>
-                                <p class="text-[10px] text-gray-500">${subText}</p>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <span class="font-semibold text-sm text-gray-800">${formatRp(summary[name].cost)}</span>
-                                <i class="fas fa-chevron-right text-gray-300 text-xs group-hover:text-blue-500 transition-colors"></i>
-                            </div>
-                        </div>`;
-                }).join('');
-            }
+        const calc = (changed) => {
+            let q = parseFloat(qtyEl.value); let p = parseFloat(priceEl.value); let t = parseFloat(totalEl.value);
+            if (changed === 'qty' && !isNaN(q)) { if (!isNaN(p)) totalEl.value = Math.round(q * p); else if (!isNaN(t) && q !== 0) priceEl.value = Math.round(t / q); }
+            else if (changed === 'price' && !isNaN(p)) { if (!isNaN(q)) totalEl.value = Math.round(q * p); else if (!isNaN(t) && p !== 0) qtyEl.value = (t / p).toFixed(2).replace(/\.00$/, ''); }
+            else if (changed === 'total' && !isNaN(t)) { if (!isNaN(q) && q !== 0) priceEl.value = Math.round(t / q); else if (!isNaN(p) && p !== 0) qtyEl.value = (t / p).toFixed(2).replace(/\.00$/, ''); }
         };
-
-        renderRincian('material', 'dash-detail-material'); renderRincian('gaji', 'dash-detail-gaji'); renderRincian('bahan', 'dash-detail-bahan');
+        qtyEl.addEventListener('input', () => calc('qty')); 
+        priceEl.addEventListener('input', () => calc('price')); 
+        totalEl.addEventListener('input', () => calc('total'));
     }
 
-    function showItemHistory(type, itemName) {
-        const modal = document.getElementById('history-modal');
-        const iconType = type === 'gaji' ? '<i class="fas fa-users text-green-500 mr-2"></i>' : type === 'material' ? '<i class="fas fa-boxes text-orange-500 mr-2"></i>' : '<i class="fas fa-hammer text-purple-500 mr-2"></i>';
-        const subTitleLocation = currentDashboardLocation === 'Semua' ? 'Semua Proyek' : `${currentDashboardLocation}`;
-
-        document.getElementById('history-modal-title').innerHTML = `<div><span class="text-[10px] text-gray-400 font-semibold uppercase block mb-1">Riwayat: ${subTitleLocation}</span><div class="flex items-center text-lg font-bold text-gray-800">${iconType} ${itemName}</div></div>`;
-        
-        const historyData = appData.transactions[type].filter(tx => {
-            let matchName = tx.name === itemName;
-            let matchLoc = currentDashboardLocation === 'Semua' ? true : (tx.location || 'Umum') === currentDashboardLocation;
-            let matchDate = true;
-            if (filterStartDate) matchDate = matchDate && tx.date >= filterStartDate;
-            if (filterEndDate) matchDate = matchDate && tx.date <= filterEndDate;
-            return matchName && matchLoc && matchDate;
-        });
-        
-        const content = document.getElementById('history-modal-content');
-        if (historyData.length === 0) content.innerHTML = `<div class="text-center text-xs text-gray-500 py-10">Belum ada riwayat tercatat</div>`;
-        else {
-            content.innerHTML = '<div class="space-y-3">' + [...historyData].reverse().map(tx => {
-                let borderColor = type === 'gaji' ? 'bg-green-500' : type === 'material' ? 'bg-orange-500' : 'bg-purple-500';
-                let tagLokasi = (currentDashboardLocation === 'Semua' && tx.location) ? `<span class="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded ml-2"><i class="fas fa-map-marker-alt"></i> ${tx.location}</span>` : '';
-                let detailText = type === 'gaji' ? `<span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-[10px] font-medium"><i class="fas fa-check-circle mr-1"></i>Sukses Dibayar</span>` : `Jml: <span class="font-bold text-gray-700">${tx.qty} ${tx.unit||''}</span> <span class="text-gray-300 mx-1">|</span> @${formatRp(tx.price)}`;
-                
-                return `
-                    <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden flex justify-between items-center">
-                        <div class="absolute left-0 top-0 bottom-0 w-1 ${borderColor}"></div>
-                        <div class="pl-3">
-                            <p class="text-xs font-semibold text-gray-500 mb-1"><i class="far fa-calendar-alt mr-1"></i>${formatDate(tx.date)} ${tagLokasi}</p>
-                            <p class="text-[11px] text-gray-500">${detailText}</p>
-                        </div>
-                        <div class="font-bold text-gray-800 text-sm text-right">${formatRp(tx.total)}</div>
-                    </div>`;
-            }).join('') + '</div>';
-        }
-        modal.classList.replace('hidden','flex');
-    }
-    function closeHistoryModal() { document.getElementById('history-modal').classList.replace('flex','hidden'); }
-
-    function setTrxType(type) {
-        trxCurrentType = type;
-        const tabs = ['material', 'gaji', 'bahan'];
-        const uiMap = {
-            material: { text: 'text-orange-600', border: 'border-orange-200', bgBtn: 'bg-orange-500', hover: 'hover:bg-orange-600', icon: 'fa-boxes', indicator: 'bg-orange-500', label: 'Nama Material', title: 'Input Material' },
-            gaji: { text: 'text-green-600', border: 'border-green-200', bgBtn: 'bg-green-600', hover: 'hover:bg-green-700', icon: 'fa-users', indicator: 'bg-green-500', label: 'Nama Pekerja', title: 'Input Gaji' },
-            bahan: { text: 'text-purple-600', border: 'border-purple-200', bgBtn: 'bg-purple-600', hover: 'hover:bg-purple-700', icon: 'fa-hammer', indicator: 'bg-purple-500', label: 'Nama Bahan', title: 'Input Bahan' }
+    function handleImageUpload(e) {
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 800; const MAX_HEIGHT = 800;
+                let width = img.width; let height = img.height;
+                if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } } 
+                else { if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; } }
+                canvas.width = width; canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                currentImageBase64 = canvas.toDataURL('image/jpeg', 0.6); 
+                document.getElementById('image-preview').src = currentImageBase64;
+                document.getElementById('image-preview-container').classList.remove('hidden');
+            };
+            img.src = event.target.result;
         };
-
-        tabs.forEach(t => {
-            const btn = document.getElementById(`tab-trx-${t}`);
-            if (t === type) btn.className = `flex-1 py-1.5 text-[11px] font-bold rounded-md bg-white shadow-sm transition-all border ${uiMap[t].text} ${uiMap[t].border}`;
-            else btn.className = `flex-1 py-1.5 text-[11px] font-semibold rounded-md text-gray-500 hover:bg-gray-100 transition-all border border-transparent`;
-        });
-
-        document.getElementById('trx-indicator').className = `absolute top-0 left-0 w-1 h-full ${uiMap[type].indicator} transition-colors duration-300`;
-        document.getElementById('trx-icon').className = `fas ${uiMap[type].icon} ${uiMap[type].text.replace('600', '500')} mr-2 transition-colors duration-300`;
-        document.getElementById('trx-title').textContent = uiMap[type].title;
-        
-        const btnSubmit = document.getElementById('btn-trx-submit');
-        btnSubmit.className = `w-full text-white rounded-lg p-3 text-sm font-bold transition-all shadow-md active:scale-95 ${uiMap[type].bgBtn} ${uiMap[type].hover}`;
-        btnSubmit.innerHTML = `<i class="fas fa-save mr-1"></i> Simpan Data ${type.charAt(0).toUpperCase() + type.slice(1)}`;
-        
-        document.getElementById('label-trx-name').innerHTML = `${uiMap[type].label} <span class="text-[10px] text-gray-400 font-normal">(Opsional)</span>`;
-        
-        const datalistMap = { material: 'datalist-materials', gaji: 'datalist-workers', bahan: 'datalist-supplies' };
-        document.getElementById('trx-name').setAttribute('list', datalistMap[type]);
-
-        const wrapCalc = document.getElementById('wrap-trx-calc');
-        const wrapTotalOnly = document.getElementById('wrap-trx-total-only');
-        const inputTotalCalc = document.getElementById('trx-total');
-        const inputTotalOnly = document.getElementById('trx-total-only');
-
-        if (type === 'gaji') {
-            wrapCalc.classList.add('hidden'); wrapTotalOnly.classList.remove('hidden');
-        } else {
-            wrapCalc.classList.remove('hidden'); wrapTotalOnly.classList.add('hidden');
-            inputTotalCalc.className = inputTotalCalc.className.replace(/border-\w+-200/, `border-${type==='material'?'orange':'purple'}-200`).replace(/bg-\w+-50/, `bg-${type==='material'?'orange':'purple'}-50`).replace(/ring-\w+-500/, `ring-${type==='material'?'orange':'purple'}-500`);
-        }
+        reader.readAsDataURL(file);
+    }
+    function removeImage() {
+        currentImageBase64 = null;
+        document.getElementById('trx-image').value = '';
+        document.getElementById('image-preview-container').classList.add('hidden');
+        document.getElementById('image-preview').src = '';
     }
 
     function handleTrxSubmit(e) {
         e.preventDefault();
-        let type = trxCurrentType;
-        let newTx = { id: Date.now().toString(), type: type, synced: false };
-        newTx.date = document.getElementById(`trx-date`).value;
-        newTx.location = document.getElementById(`trx-location`).value.trim() || "";
-        newTx.name = document.getElementById(`trx-name`).value.trim() || "-";
-
-        if (type === 'material' || type === 'bahan') {
-            newTx.qty = parseFloat(document.getElementById(`trx-qty`).value) || 0;
-            newTx.price = parseFloat(document.getElementById(`trx-price`).value) || 0;
-            newTx.total = parseFloat(document.getElementById(`trx-total`).value) || 0;
-            
-            let masterList = type === 'material' ? appData.settings.materials : appData.settings.supplies;
-            let masterItem = masterList.find(m => (m.name || m).toLowerCase() === newTx.name.toLowerCase());
-            newTx.unit = masterItem ? (masterItem.unit || "") : "";
-        } else {
-            newTx.total = parseFloat(document.getElementById(`trx-total-only`).value) || 0;
-        }
-
-        appData.transactions[type].push(newTx); saveData(); 
         
+        const catSelected = document.getElementById('trx-category').value;
+        const nameVal = document.getElementById('trx-name').value.trim() || "-";
+        
+        let newTx = { 
+            id: Date.now().toString(), 
+            synced: false,
+            date: document.getElementById('trx-date').value,
+            location: document.getElementById('trx-location').value.trim() || "",
+            category: catSelected,
+            name: nameVal,
+            qty: parseFloat(document.getElementById('trx-qty').value) || 1,
+            price: parseFloat(document.getElementById('trx-price').value) || 0,
+            total: parseFloat(document.getElementById('trx-total').value) || 0
+        };
+
+        // Otomatis deteksi unit (satuan) dari master data
+        let masterItem = (appData.settings.items || []).find(m => m.category === catSelected && m.name.toLowerCase() === nameVal.toLowerCase());
+        newTx.unit = masterItem ? (masterItem.unit || "") : "";
+
+        if (currentImageBase64) newTx.image = currentImageBase64;
+
+        appData.transactions.push(newTx); 
+        saveData(); 
+        
+        // Reset formulir input saja, simpan tgl, kategori & lokasi
         document.getElementById('trx-name').value = '';
         document.getElementById('trx-qty').value = '';
         document.getElementById('trx-price').value = '';
         document.getElementById('trx-total').value = '';
-        document.getElementById('trx-total-only').value = '';
+        removeImage();
         
         showToast('Data berhasil disimpan!');
         if(appData.gasUrl && navigator.onLine) syncData(true);
     }
 
+    function handleSearchTransaksi(e) { searchTransaksiQuery = e.target.value.toLowerCase(); trxCurrentPage = 1; renderSemuaTransaksi(); }
+
     function renderSemuaTransaksi() {
         const tableEl = document.getElementById('table-all-transaksi');
         if(!tableEl) return;
         
-        let allTrx = [
-            ...appData.transactions.material.map(t => ({...t, kategori: 'Material', icon: 'fa-boxes', color: 'text-orange-500', bg: 'bg-orange-50'})),
-            ...appData.transactions.gaji.map(t => ({...t, kategori: 'Gaji', icon: 'fa-users', color: 'text-green-500', bg: 'bg-green-50'})),
-            ...appData.transactions.bahan.map(t => ({...t, kategori: 'Bahan', icon: 'fa-hammer', color: 'text-purple-500', bg: 'bg-purple-50'}))
-        ];
+        let allTrx = [...appData.transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
         
-        allTrx.sort((a, b) => new Date(b.date) - new Date(a.date));
+        if (searchTransaksiQuery) {
+            allTrx = allTrx.filter(tx => (tx.name || '').toLowerCase().includes(searchTransaksiQuery) || (tx.location || '').toLowerCase().includes(searchTransaksiQuery) || (tx.category || '').toLowerCase().includes(searchTransaksiQuery));
+        }
         
         const totalItems = allTrx.length;
         const totalPages = Math.ceil(totalItems / trxItemsPerPage) || 1;
-        
         if(trxCurrentPage > totalPages) trxCurrentPage = totalPages;
         if(trxCurrentPage < 1) trxCurrentPage = 1;
         document.getElementById('transaksi-page-info').textContent = `Hal ${trxCurrentPage} / ${totalPages}`;
         
         const paginatedData = allTrx.slice((trxCurrentPage - 1) * trxItemsPerPage, trxCurrentPage * trxItemsPerPage);
         
-        if(paginatedData.length === 0) {
-            tableEl.innerHTML = `<tr><td class="text-center py-10 text-sm text-gray-400 bg-gray-50"><i class="fas fa-folder-open text-3xl mb-2 opacity-20 block"></i>Belum ada transaksi</td></tr>`;
-            return;
-        }
+        if(paginatedData.length === 0) { tableEl.innerHTML = `<tr><td class="text-center py-10 text-sm text-gray-400 bg-gray-50"><i class="fas fa-folder-open text-3xl mb-2 opacity-20 block"></i>Tidak ada data</td></tr>`; return; }
         
         tableEl.innerHTML = paginatedData.map(tx => {
-            let detailJml = (tx.type === 'gaji') ? '' : `<span class="font-bold text-gray-700">${tx.qty}</span> <span class="text-gray-400">${tx.unit||''}</span> <span class="mx-1 text-gray-300">|</span> `;
-            let tagLokasi = `<span class="bg-white border border-gray-100 px-1.5 py-0.5 rounded shadow-sm text-[9px] text-blue-600 font-medium"><i class="fas fa-map-marker-alt"></i> ${tx.location||'Umum'}</span>`;
-            
+            const sty = getCategoryStyle(tx.category);
+            let tagLokasi = `<span class="bg-white border border-gray-200 px-1.5 py-0.5 rounded shadow-sm text-[9px] text-gray-600 font-medium"><i class="fas fa-map-marker-alt text-blue-500"></i> ${tx.location||'Umum'}</span>`;
+            let iconLampiran = tx.image ? `<i class="fas fa-paperclip text-blue-400 ml-1" title="Ada Foto Bukti"></i>` : '';
+
             return `
             <tr class="hover:bg-blue-50/50 transition-colors group">
                 <td class="p-3 border-b border-gray-50">
                     <div class="flex items-start gap-3">
-                        <div class="w-9 h-9 rounded-xl ${tx.bg} ${tx.color} flex items-center justify-center flex-shrink-0 mt-0.5 border border-white shadow-sm group-hover:scale-105 transition-transform"><i class="fas ${tx.icon} text-sm"></i></div>
+                        <div class="w-9 h-9 rounded-xl ${sty.bg} ${sty.text} flex items-center justify-center flex-shrink-0 mt-0.5 border ${sty.border} shadow-sm"><i class="fas ${sty.icon} text-sm"></i></div>
                         <div class="flex-1 w-full">
                             <div class="flex justify-between items-start mb-0.5">
-                                <div class="font-bold text-gray-800 text-sm leading-tight">${tx.name || '-'}</div>
+                                <div class="font-bold text-gray-800 text-sm leading-tight">${tx.name || '-'}${iconLampiran}</div>
                                 <div class="font-bold text-gray-800 text-sm ml-2">${formatRp(tx.total)}</div>
                             </div>
                             <div class="flex justify-between items-center mt-1">
-                                <div class="text-[10px] text-gray-500">${formatDate(tx.date)} &bull; ${detailJml} ${tagLokasi}</div>
-                                <div class="text-[9px] font-medium text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">${tx.kategori}</div>
+                                <div class="text-[10px] text-gray-500">${formatDate(tx.date)} &bull; <span class="font-bold text-gray-700">${tx.qty} ${tx.unit||''}</span> ${tagLokasi}</div>
+                                <div class="text-[9px] font-medium text-gray-500 bg-gray-100 border border-gray-200 px-1.5 py-0.5 rounded shadow-sm">${tx.category}</div>
                             </div>
                         </div>
                     </div>
@@ -671,178 +761,47 @@
     }
     
     function changePage(delta) {
-        let allLen = appData.transactions.material.length + appData.transactions.gaji.length + appData.transactions.bahan.length;
-        let totalPages = Math.ceil(allLen / trxItemsPerPage) || 1;
+        let allTrx = appData.transactions;
+        if (searchTransaksiQuery) {
+           allTrx = allTrx.filter(tx => (tx.name || '').toLowerCase().includes(searchTransaksiQuery) || (tx.location || '').toLowerCase().includes(searchTransaksiQuery) || (tx.category || '').toLowerCase().includes(searchTransaksiQuery));
+        }
+        let totalPages = Math.ceil(allTrx.length / trxItemsPerPage) || 1;
         trxCurrentPage += delta;
-        if(trxCurrentPage < 1) trxCurrentPage = 1; if(trxCurrentPage > totalPages) trxCurrentPage = totalPages;
+        if(trxCurrentPage < 1) trxCurrentPage = 1; 
+        if(trxCurrentPage > totalPages) trxCurrentPage = totalPages;
         renderSemuaTransaksi();
     }
 
-    function saveApiKey() {
-        const key = document.getElementById('setting-ai-key').value.trim();
-        if(key) { localStorage.setItem('gemini_api_key_app2', key); showToast('API Key Gemini Disimpan!'); } 
-        else { localStorage.removeItem('gemini_api_key_app2'); showToast('API Key Gemini Dihapus.'); }
-    }
-
-    function handleEnter(e) { if(e.key === 'Enter') handleSendChat(); }
-    
-    function scrollToChatBottom() {
-        const chatBox = document.getElementById('chat-box');
-        setTimeout(() => { chatBox.parentElement.scrollTop = chatBox.parentElement.scrollHeight; }, 100);
-    }
-
-    function appendChatBubble(role, text, id = null) {
-        const chatBox = document.getElementById('chat-box');
-        const bubble = document.createElement('div');
-        if(id) bubble.id = id;
-        
-        if(role === 'user') {
-            bubble.className = "flex flex-col gap-1 items-end chat-bubble";
-            bubble.innerHTML = `<div class="text-[10px] text-gray-400 mr-1 font-medium">Anda</div><div class="bg-indigo-600 text-white p-3.5 rounded-2xl rounded-tr-sm text-sm w-[85%] shadow-sm leading-relaxed">${text}</div>`;
-        } else {
-            bubble.className = "flex flex-col gap-1 chat-bubble";
-            const formattedText = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\*(.*?)\*/g, '<i>$1</i>').replace(/\n/g, '<br>');
-            bubble.innerHTML = `<div class="text-[10px] text-gray-400 ml-1 font-medium"><i class="fas fa-robot mr-1"></i>Gemini AI</div><div class="bg-blue-50 text-blue-800 p-3.5 rounded-2xl rounded-tl-sm text-sm w-[85%] shadow-sm leading-relaxed">${formattedText}</div>`;
-        }
-        chatBox.appendChild(bubble); scrollToChatBottom();
-    }
-
-    async function handleSendChat() {
-        const inputEl = document.getElementById('ai-input');
-        const text = inputEl.value.trim();
-        if(!text) return;
-
-        const apiKey = localStorage.getItem('gemini_api_key');
-        if(!apiKey) { showToast("Silakan simpan API Key di Setting terlebih dahulu!"); switchView('pengaturan'); return; }
-
-        appendChatBubble('user', text); inputEl.value = '';
-        const loadingId = 'loading-' + Date.now();
-        appendChatBubble('ai', '<i class="fas fa-circle-notch fa-spin mr-2"></i>Mencari AI yang aktif...', loadingId);
-
-        try {
-            // 1. Teknik Pre-Summarize: Rangkuman Data
-            let summaryText = "Rangkuman Data Proyek:\n";
-            ['material', 'gaji', 'bahan'].forEach(type => {
-                let items = {};
-                let typeTotal = 0;
-                appData.transactions[type].forEach(tx => {
-                    let itemName = tx.name || 'Tidak Bernama';
-                    if(!items[itemName]) items[itemName] = { qty: 0, total: 0, unit: tx.unit||'' };
-                    items[itemName].qty += (type === 'gaji' ? 1 : (parseFloat(tx.qty) || 0));
-                    items[itemName].total += (tx.total || 0);
-                    typeTotal += (tx.total || 0);
-                });
-                
-                summaryText += `[${type.toUpperCase()} - Total: Rp ${typeTotal}]\n`;
-                for(let name in items) {
-                    let qtyStr = type === 'gaji' ? `${items[name].qty}x bayar` : `${items[name].qty} ${items[name].unit}`;
-                    summaryText += `- ${name}: ${qtyStr} = Rp ${items[name].total}\n`;
-                }
-            });
-
-            const prompt = `Data Transaksi Proyek:\n${summaryText}\n\nPertanyaan: ${text}`;
-            const sysInstruction = "Anda adalah Asisten AI untuk aplikasi keuangan kontraktor. Anda akan diberikan data transaksi keuangan proyek. Jawab dalam bahasa Indonesia yang ramah, profesional, dan akurat. Jangan gunakan kata-kata teknis coding.";
-            const payload = { contents: [{ parts: [{ text: prompt }] }], systemInstruction: { parts: [{ text: sysInstruction }] } };
-
-            // 2. AUTO-DISCOVERY MODEL (Tanya Google model apa yang tersedia)
-            const modelRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-            if(!modelRes.ok) {
-                const errData = await modelRes.json();
-                throw new Error(`Gagal cek daftar model: ${errData.error?.message || 'Kunci API tidak valid'}`);
-            }
-            
-            const modelData = await modelRes.json();
-            const validModels = modelData.models.filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'));
-            
-            if(validModels.length === 0) throw new Error('API Key valid, tapi tidak ada mesin AI yang tersedia untuk akun ini.');
-            
-            // Urutkan AI: prioritaskan versi "pro" (paling pintar) lalu versi terbaru
-            validModels.sort((a, b) => {
-                const getScore = (name) => {
-                    let score = 0;
-                    
-                    // SKOR VIP: Prioritas Utama untuk Gemini 3 Flash Preview
-                    if (name.includes('gemini-3-flash-preview')) score += 100;
-                    
-                    if (name.includes('pro')) score += 20;   // Nilai tinggi untuk versi Pro
-                    if (name.includes('latest')) score += 5; // Tambahan untuk versi pembaruan terakhir
-                    if (name.includes('flash')) score += 1;  // Standar untuk versi Flash
-                    
-                    // Prioritaskan angka generasi AI yang lebih tinggi (Generasi 3 > 2.5 > 2.0 > 1.5)
-                    if (name.includes('-3-') || name.includes('-3.')) score += 4;
-                    else if (name.includes('2.5')) score += 3;
-                    else if (name.includes('2.0')) score += 2;
-                    else if (name.includes('1.5')) score += 1;
-                    
-                    return score;
-                };
-                
-                return getScore(b.name) - getScore(a.name); // Urutkan dari skor tertinggi ke terendah
-            });
-            
-            // 3. SISTEM UJI COBA BERUNTUN - Cari mesin AI yang benar-benar mau menerima chat
-            let success = false;
-            let lastErrorMsg = "Semua mesin AI tidak merespon.";
-            const topModels = validModels.slice(0, 4); // Ambil 4 mesin AI teratas untuk dicoba satu-satu
-            
-            for (let i = 0; i < topModels.length; i++) {
-                let aiName = topModels[i].name;
-                
-                // Update teks loading di layar agar Anda tahu ia sedang mencari jalur lain
-                const loadEl = document.getElementById(loadingId);
-                if(loadEl) {
-                    loadEl.innerHTML = `<div class="text-[10px] text-gray-400 ml-1 font-medium"><i class="fas fa-robot mr-1"></i>Gemini AI</div><div class="bg-blue-50 text-blue-800 p-3.5 rounded-2xl rounded-tl-sm text-sm w-[85%] shadow-sm leading-relaxed"><i class="fas fa-circle-notch fa-spin mr-2"></i>Mencoba server ${aiName.replace('models/','')}...</div>`;
-                }
-
-                try {
-                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${aiName}:generateContent?key=${apiKey}`, {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-                    });
-                    
-                    const result = await res.json();
-                    
-                    if (res.ok && result.candidates && result.candidates.length > 0) {
-                        document.getElementById(loadingId)?.remove();
-                        appendChatBubble('ai', result.candidates[0].content.parts[0].text);
-                        success = true;
-                        break; // BERHASIL! Hentikan pencarian karena AI sudah membalas
-                    } else {
-                        if(res.status === 429) {
-                            lastErrorMsg = '⚠️ Kuota gratis AI Google sedang penuh. Coba 1 menit lagi.';
-                            break; // Jangan paksa sistem jika kuota sedang limit
-                        }
-                        // Jika gagal karena "not for new users" dll, simpan pesan errornya lalu berputar mencoba mesin AI berikutnya (i++)
-                        lastErrorMsg = result.error?.message || res.statusText;
-                    }
-                } catch(e) {
-                    lastErrorMsg = e.message;
-                }
-            }
-            
-            if (!success) {
-                document.getElementById(loadingId)?.remove();
-                appendChatBubble('ai', `⚠️ Semua jalur ditolak Google:<br><span class="text-red-500 font-mono text-[10px]">${lastErrorMsg}</span>`);
-            }
-
-        } catch(err) {
-            document.getElementById(loadingId)?.remove();
-            appendChatBubble('ai', `⚠️ Error Sistem:<br><span class="text-red-500 font-mono text-[10px]">${err.message}</span>`);
-        }
-    }
-
     function updateSettingsMaster() {
-        const renderTags = (settingKey, containerId) => {
-            const container = document.getElementById(containerId);
-            if (!appData.settings[settingKey] || appData.settings[settingKey].length === 0) {
-                container.innerHTML = `<span class="text-xs text-gray-400 italic">Belum ada data dari Spreadsheet</span>`;
-                return;
+        const container = document.getElementById('list-master-settings');
+        const cats = appData.settings.categories || [];
+        const items = appData.settings.items || [];
+        const locs = appData.settings.locations || [];
+
+        let html = '';
+        
+        // Tampilkan Lokasi
+        html += `<div class="mb-4"><h4 class="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-2"><i class="fas fa-map-marker-alt text-blue-500 mr-1"></i> Data Lokasi</h4><div class="flex flex-wrap gap-2">`;
+        if (locs.length === 0) html += `<span class="text-xs text-gray-400 italic">Kosong</span>`;
+        else html += locs.map(l => `<span class="bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-full text-xs shadow-sm">${l}</span>`).join('');
+        html += `</div></div>`;
+
+        // Tampilkan Items Berdasarkan Kategori
+        cats.forEach(c => {
+            const sty = getCategoryStyle(c);
+            const catItems = items.filter(i => i.category === c);
+            html += `<div class="mb-4"><h4 class="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-2"><i class="fas ${sty.icon} ${sty.text} mr-1"></i> Item ${c}</h4><div class="flex flex-wrap gap-2">`;
+            if (catItems.length === 0) html += `<span class="text-xs text-gray-400 italic">Kosong</span>`;
+            else {
+                html += catItems.map(it => {
+                    let unitTxt = it.unit ? ` <span class="text-gray-400 text-[10px]">(${it.unit})</span>` : '';
+                    return `<span class="bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-full text-xs shadow-sm">${it.name}${unitTxt}</span>`;
+                }).join('');
             }
-            container.innerHTML = (appData.settings[settingKey] || []).map((item) => {
-                let name = item.name || item; let unit = item.unit ? ` <span class="text-gray-400 text-[10px]">(${item.unit})</span>` : '';
-                return `<span class="bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-full text-xs flex items-center gap-2 shadow-sm">${name}${unit}</span>`;
-            }).join('');
-        };
-        renderTags('locations', 'list-locations'); renderTags('materials', 'list-materials'); renderTags('supplies', 'list-supplies'); renderTags('workers', 'list-workers');
+            html += `</div></div>`;
+        });
+
+        container.innerHTML = html;
     }
 
     function saveGasUrl() {
@@ -855,17 +814,21 @@
     async function syncData(isSilent = false) {
         if(!appData.gasUrl || !appData.gasUrl.includes('/macros/s/')) { if(!isSilent) { showToast('Isi URL Cloud dulu!'); switchView('pengaturan'); } return; }
         const syncIcon = document.getElementById('sync-icon'); syncIcon.classList.add('fa-spin');
-        if(!isSilent) showToast('Sinkronisasi berjalan...');
+        if(!isSilent) showToast('Proses Sinkronisasi & Upload ke GDrive berjalan...');
 
-        let unsynced = [];
-        ['material', 'gaji', 'bahan'].forEach(type => { appData.transactions[type].forEach(tx => { if(!tx.synced) unsynced.push(tx); }); });
+        const unsynced = appData.transactions.filter(tx => !tx.synced);
 
         try {
-            // HANYA MENGIRIM TRANSAKSI (Tidak menimpa Master Data)
             const response = await fetch(appData.gasUrl, { method: 'POST', body: JSON.stringify({ action: 'sync', data: unsynced }), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: 'follow' });
             if (!response.ok) throw new Error("HTTP Status: " + response.status);
             const result = await response.json();
-            if(result.status === 'success') { appData.transactions = result.data; if(result.settings) appData.settings = result.settings; saveData(); if(!isSilent) showToast('Aplikasi tersinkron!'); } 
+            
+            if(result.status === 'success') { 
+                appData.transactions = result.data; 
+                if(result.settings) appData.settings = result.settings; // Override settings from cloud
+                saveData(); 
+                if(!isSilent) showToast('Aplikasi tersinkron!'); 
+            } 
             else if(!isSilent) showToast('Gagal Tarik: ' + result.message);
         } catch(err) {
             if(!isSilent) showToast('Gagal terhubung ke Cloud.'); 
@@ -875,10 +838,128 @@
     function pullDataFromCloud() {
         const modal = document.createElement('div');
         modal.className = 'fixed inset-0 bg-black bg-opacity-60 z-[100] flex items-center justify-center backdrop-blur-sm px-4';
-        modal.innerHTML = `<div class="bg-white p-6 rounded-2xl w-full max-w-sm text-center shadow-2xl modal-content-animate"><div class="w-16 h-16 bg-indigo-100 text-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-cloud-download-alt text-2xl"></i></div><h3 class="text-lg font-bold text-gray-800 mb-2">Tarik Data Excel?</h3><p class="text-sm text-gray-500 mb-6">Tindakan ini menyamakan isi HP dengan isi Spreadsheet (termasuk Master).</p><div class="flex gap-3"><button id="btn-cancel-pull" class="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-xl font-medium hover:bg-gray-200 transition">Batal</button><button id="btn-confirm-pull" class="flex-1 bg-indigo-600 text-white py-2.5 rounded-xl font-medium hover:bg-indigo-700 shadow-md transition">Tarik Data</button></div></div>`;
+        modal.innerHTML = `<div class="bg-white p-6 rounded-2xl w-full max-w-sm text-center shadow-2xl modal-content-animate"><div class="w-16 h-16 bg-indigo-100 text-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-cloud-download-alt text-2xl"></i></div><h3 class="text-lg font-bold text-gray-800 mb-2">Tarik Data Excel?</h3><p class="text-sm text-gray-500 mb-6">Menyalin data terbaru (Transaksi & Master Kategori) dari Spreadsheet.</p><div class="flex gap-3"><button id="btn-cancel-pull" class="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-xl font-medium hover:bg-gray-200 transition">Batal</button><button id="btn-confirm-pull" class="flex-1 bg-indigo-600 text-white py-2.5 rounded-xl font-medium hover:bg-indigo-700 shadow-md transition">Tarik Data</button></div></div>`;
         document.body.appendChild(modal);
         document.getElementById('btn-cancel-pull').onclick = () => modal.remove();
         document.getElementById('btn-confirm-pull').onclick = () => { modal.remove(); syncData(false); };
+    }
+
+    function saveApiKey() {
+        const key = document.getElementById('setting-ai-key').value.trim();
+        if(key) { localStorage.setItem('gemini_api_key_app2', key); showToast('API Key Gemini Disimpan!'); } 
+        else { localStorage.removeItem('gemini_api_key_app2'); showToast('API Key Gemini Dihapus.'); }
+    }
+    
+    function handleEnter(e) { if(e.key === 'Enter') handleSendChat(); }
+    function scrollToChatBottom() { const container = document.getElementById('chat-box-container'); if(container) setTimeout(() => { container.scrollTop = container.scrollHeight; }, 100); }
+
+    function appendChatBubble(role, text, id = null) {
+        const chatBox = document.getElementById('chat-box');
+        const bubble = document.createElement('div');
+        if(id) bubble.id = id;
+        
+        if(role === 'user') {
+            bubble.className = "flex flex-col gap-1 items-end chat-bubble self-end w-full";
+            bubble.innerHTML = `<div class="text-[10px] text-gray-400 mr-1 font-medium">Anda</div><div class="bg-indigo-600 text-white p-3.5 rounded-2xl rounded-tr-sm text-sm max-w-[85%] shadow-sm leading-relaxed inline-block">${text}</div>`;
+        } else {
+            bubble.className = "flex flex-col gap-1 chat-bubble self-start w-full";
+            const formattedText = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\*(.*?)\*/g, '<i>$1</i>').replace(/\n/g, '<br>');
+            bubble.innerHTML = `<div class="text-[10px] text-gray-400 ml-1 font-medium"><i class="fas fa-robot mr-1"></i>Gemini AI</div><div class="bg-blue-50 border border-blue-100 text-blue-800 p-3.5 rounded-2xl rounded-tl-sm text-sm max-w-[85%] shadow-sm leading-relaxed inline-block">${formattedText}</div>`;
+        }
+        chatBox.appendChild(bubble); scrollToChatBottom();
+    }
+
+    async function handleSendChat() {
+        const inputEl = document.getElementById('ai-input');
+        const text = inputEl.value.trim();
+        if(!text) return;
+        const apiKey = localStorage.getItem('gemini_api_key_app2');
+        if(!apiKey) { showToast("Silakan simpan API Key di Setting!"); switchView('pengaturan'); return; }
+
+        appendChatBubble('user', text); inputEl.value = '';
+        const loadingId = 'loading-' + Date.now();
+        
+        const loadBubble = document.createElement('div');
+        loadBubble.id = loadingId;
+        loadBubble.className = "flex flex-col gap-1 chat-bubble self-start w-full";
+        loadBubble.innerHTML = `<div class="text-[10px] text-gray-400 ml-1 font-medium"><i class="fas fa-robot mr-1"></i>Gemini AI</div><div class="bg-blue-50 border border-blue-100 text-blue-800 p-3.5 rounded-2xl rounded-tl-sm text-sm max-w-[85%] shadow-sm leading-relaxed inline-block"><i class="fas fa-circle-notch fa-spin mr-2"></i>Mencari Server AI...</div>`;
+        document.getElementById('chat-box').appendChild(loadBubble);
+        scrollToChatBottom();
+
+        try {
+            // Bangun Rangkuman Data untuk dibaca AI
+            let summaryText = "Rangkuman Data Transaksi Proyek:\n";
+            const cats = appData.settings.categories || [];
+            
+            cats.forEach(cat => {
+                let items = {}; let typeTotal = 0;
+                appData.transactions.filter(tx => tx.category === cat).forEach(tx => {
+                    let itemName = tx.name || 'Tidak Bernama';
+                    if(!items[itemName]) items[itemName] = { qty: 0, total: 0, unit: tx.unit||'' };
+                    items[itemName].qty += (parseFloat(tx.qty) || 0);
+                    items[itemName].total += (tx.total || 0); typeTotal += (tx.total || 0);
+                });
+                
+                summaryText += `[KATEGORI ${cat.toUpperCase()} - Total: Rp ${typeTotal}]\n`;
+                for(let name in items) {
+                    summaryText += `- ${name}: ${items[name].qty} ${items[name].unit} = Rp ${items[name].total}\n`;
+                }
+            });
+
+            const prompt = `${summaryText}\n\nPertanyaan: ${text}`;
+            const sysInstruction = "Anda adalah Asisten AI untuk aplikasi keuangan kontraktor. Anda akan diberikan data transaksi keuangan. Jawab dalam bahasa Indonesia yang ramah, profesional, dan akurat. Jangan gunakan kata-kata teknis coding.";
+            const payload = { contents: [{ parts: [{ text: prompt }] }], systemInstruction: { parts: [{ text: sysInstruction }] } };
+
+            const modelRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+            if(!modelRes.ok) throw new Error(`Radar Gagal: API Key tidak valid.`);
+            const modelData = await modelRes.json();
+            const validModels = modelData.models.filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'));
+            if(validModels.length === 0) throw new Error('Tidak ada AI aktif.');
+            
+            validModels.sort((a, b) => {
+                const getScore = (name) => {
+                    let score = 0;
+                    if (name.includes('gemini-3-flash-preview')) score += 100;
+                    if (name.includes('pro')) score += 20; 
+                    if (name.includes('latest')) score += 5;
+                    if (name.includes('flash')) score += 1;
+                    if (name.includes('2.5')) score += 3;
+                    else if (name.includes('2.0')) score += 2;
+                    else if (name.includes('1.5')) score += 1;
+                    return score;
+                };
+                return getScore(b.name) - getScore(a.name); 
+            });
+            
+            let success = false;
+            let lastErrorMsg = "Semua mesin AI ditolak.";
+            const topModels = validModels.slice(0, 4); 
+            
+            for (let i = 0; i < topModels.length; i++) {
+                let aiName = topModels[i].name;
+                const loadEl = document.getElementById(loadingId);
+                if(loadEl) loadEl.innerHTML = `<div class="text-[10px] text-gray-400 ml-1 font-medium"><i class="fas fa-robot mr-1"></i>Gemini AI</div><div class="bg-blue-50 border border-blue-100 text-blue-800 p-3.5 rounded-2xl rounded-tl-sm text-sm max-w-[85%] shadow-sm leading-relaxed inline-block"><i class="fas fa-circle-notch fa-spin mr-2"></i>Mencoba server ${aiName.replace('models/','')}...</div>`;
+
+                try {
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${aiName}:generateContent?key=${apiKey}`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                    });
+                    const result = await res.json();
+                    
+                    if (res.ok && result.candidates && result.candidates.length > 0) {
+                        document.getElementById(loadingId)?.remove();
+                        appendChatBubble('ai', result.candidates[0].content.parts[0].text);
+                        success = true; break; 
+                    } else {
+                        if(res.status === 429) { lastErrorMsg = '⚠️ Kuota gratis AI Google sedang penuh. Coba 1 menit lagi.'; break; }
+                        lastErrorMsg = result.error?.message || res.statusText;
+                    }
+                } catch(e) { lastErrorMsg = e.message; }
+            }
+            if (!success) { document.getElementById(loadingId)?.remove(); appendChatBubble('ai', `⚠️ Semua jalur ditolak Google:<br><span class="text-red-500 font-mono text-[10px]">${lastErrorMsg}</span>`); }
+        } catch(err) {
+            document.getElementById(loadingId)?.remove(); appendChatBubble('ai', `⚠️ Error Sistem:<br><span class="text-red-500 font-mono text-[10px]">${err.message}</span>`);
+        }
     }
 
     window.onload = initApp;
