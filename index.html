@@ -37,7 +37,6 @@
 
 <div id="toast" class="toast">Notifikasi</div>
 
-<!-- Container dengan lebar responsif (Laptop, Tablet, HP) -->
 <div class="app-container w-full max-w-md md:max-w-3xl lg:max-w-5xl transition-all duration-300 bg-[#f8fafc] shadow-[0_0_20px_rgba(0,0,0,0.05)] lg:bg-transparent lg:shadow-none">
     
     <header class="bg-blue-600 text-white p-4 sticky top-0 z-40 shadow-md">
@@ -50,10 +49,8 @@
     </header>
 
     <main id="view-dashboard" class="view-section active p-4 lg:p-6">
-        <!-- Tab Lokasi Proyek -->
         <div id="dashboard-tabs" class="flex gap-2 overflow-x-auto mb-4 pb-2 hide-scrollbar items-center"></div>
 
-        <!-- Filter Tanggal & Judul Lokasi -->
         <div class="flex justify-between items-center mb-3">
              <h2 class="text-lg font-bold text-gray-800" id="dash-lokasi-title">Semua Proyek</h2>
              <button onclick="openDateFilterModal()" class="bg-white border border-gray-200 text-gray-600 px-3 py-1.5 rounded-full text-[11px] font-medium shadow-sm hover:bg-gray-50 flex items-center gap-1.5 transition">
@@ -67,20 +64,21 @@
             <input type="text" id="search-dashboard" oninput="handleSearchDashboard(event)" placeholder="Cari rincian transaksi..." class="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all text-gray-700">
         </div>
 
-        <!-- KARTU ARUS KAS (CASHFLOW) -->
-        <div class="bg-gradient-to-br from-blue-700 to-indigo-800 rounded-2xl p-5 text-white shadow-lg mb-4 relative overflow-hidden group">
+        <div onclick="showKasHistory('semua')" class="bg-gradient-to-br from-blue-700 to-indigo-800 rounded-2xl p-5 text-white shadow-lg mb-4 relative overflow-hidden group cursor-pointer hover:shadow-xl transition-all active:scale-95">
             <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform"><i class="fas fa-wallet text-7xl"></i></div>
             <p class="text-blue-200 text-sm mb-1 font-medium">Saldo Kas Proyek</p>
             <h2 class="text-3xl font-bold relative z-10" id="dash-saldo">Rp 0</h2>
+            <p class="text-[9px] text-blue-200 mt-2 border-t border-blue-500/50 pt-2 relative z-10"><i class="fas fa-chevron-down mr-1"></i>Klik untuk riwayat arus kas</p>
         </div>
 
         <div class="grid grid-cols-2 gap-4 mb-6">
-            <div class="bg-green-50 rounded-2xl p-4 border border-green-200 shadow-sm relative overflow-hidden">
+            <div onclick="showKasHistory('pemasukan')" class="bg-green-50 rounded-2xl p-4 border border-green-200 shadow-sm relative overflow-hidden cursor-pointer hover:bg-green-100 transition-colors active:scale-95">
                 <div class="absolute -right-3 -bottom-3 opacity-10"><i class="fas fa-arrow-circle-down text-6xl text-green-600"></i></div>
                 <p class="text-green-700 text-[11px] font-bold uppercase mb-1"><i class="fas fa-plus-circle mr-1"></i>Pemasukan</p>
                 <h3 class="text-lg font-bold text-green-800 relative z-10" id="dash-pemasukan">Rp 0</h3>
+                <p class="text-[9px] text-green-600 mt-1 absolute bottom-2"><i class="fas fa-chevron-down mr-1"></i>Lihat rincian</p>
             </div>
-            <div onclick="toggleDashboardDetail('semua')" class="bg-red-50 rounded-2xl p-4 border border-red-200 shadow-sm relative overflow-hidden cursor-pointer hover:bg-red-100 transition-colors">
+            <div onclick="toggleDashboardDetail('semua')" class="bg-red-50 rounded-2xl p-4 border border-red-200 shadow-sm relative overflow-hidden cursor-pointer hover:bg-red-100 transition-colors active:scale-95">
                 <div class="absolute -right-3 -bottom-3 opacity-10"><i class="fas fa-arrow-circle-up text-6xl text-red-600"></i></div>
                 <p class="text-red-700 text-[11px] font-bold uppercase mb-1"><i class="fas fa-minus-circle mr-1"></i>Pengeluaran</p>
                 <h3 class="text-lg font-bold text-red-800 relative z-10" id="dash-pengeluaran">Rp 0</h3>
@@ -89,26 +87,19 @@
         </div>
         
         <h3 class="font-semibold text-gray-700 mb-3 flex items-center"><i class="fas fa-chart-pie text-blue-500 mr-2"></i>Rincian Pengeluaran</h3>
-        <!-- Grid Kategori Dinamis -->
         <div id="dash-category-grid" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
-
-        <!-- Rincian Expandable Dinamis -->
         <div id="dash-detail-containers" class="mt-6"></div>
     </main>
 
     <main id="view-transaksi" class="view-section p-4 lg:p-6">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:items-start">
-            
-            <!-- Kolom Kiri: Form Input -->
             <div class="lg:col-span-5">
                 
-                <!-- SAKELAR (TOGGLE) JENIS TRANSAKSI -->
                 <div class="flex bg-gray-200 p-1 rounded-xl mb-4 shadow-inner">
                     <button id="btn-toggle-pengeluaran" onclick="switchFormType('pengeluaran')" class="flex-1 py-2 text-sm font-bold rounded-lg bg-white shadow-sm text-red-600 transition-all"><i class="fas fa-arrow-up mr-1"></i> Pengeluaran</button>
                     <button id="btn-toggle-pemasukan" onclick="switchFormType('pemasukan')" class="flex-1 py-2 text-sm font-semibold rounded-lg text-gray-500 hover:text-green-600 transition-all"><i class="fas fa-arrow-down mr-1"></i> Pemasukan</button>
                 </div>
 
-                <!-- WRAPPER FORM PENGELUARAN -->
                 <div id="wrapper-form-pengeluaran" class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6 relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-1 h-full bg-red-500"></div>
                     <h3 class="font-semibold mb-4 border-b pb-2 text-gray-800 flex items-center"><i class="fas fa-file-invoice-dollar text-red-500 mr-2"></i>Input Pengeluaran Baru</h3>
@@ -171,7 +162,6 @@
                     </form>
                 </div>
 
-                <!-- WRAPPER FORM PEMASUKAN -->
                 <div id="wrapper-form-pemasukan" class="hidden bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6 relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-1 h-full bg-green-500"></div>
                     <h3 class="font-semibold mb-4 border-b pb-2 text-gray-800 flex items-center"><i class="fas fa-hand-holding-usd text-green-500 mr-2"></i>Input Pemasukan Dana</h3>
@@ -215,7 +205,6 @@
                 </div>
             </div>
             
-            <!-- Kolom Kanan: Histori -->
             <div class="lg:col-span-7">
                 <div class="flex flex-col gap-3 mb-3">
                     <div class="flex justify-between items-center">
@@ -348,7 +337,6 @@
         <button onclick="switchView('pengaturan')" class="nav-btn flex flex-col items-center p-2 text-gray-400 hover:text-blue-600 transition-colors" data-target="pengaturan"><i class="fas fa-cog text-lg mb-1"></i><span class="text-[9px] font-medium">Setting</span></button>
     </nav>
 
-    <!-- Global Datalists (Pilihan Auto-complete) -->
     <datalist id="datalist-items"></datalist>
     <datalist id="datalist-stores"></datalist>
 </div>
@@ -356,7 +344,7 @@
 <script>
     let appData = {
         transactions: [], 
-        incomes: [], // ARRAY BARU UNTUK PEMASUKAN
+        incomes: [],
         settings: { locations: [], categories: [], items: [], stores: [] },
         gasUrl: ''
     };
@@ -398,7 +386,7 @@
                 appData.incomes = [];
             } else {
                 appData = parsed;
-                if (!appData.incomes) appData.incomes = []; // Inisialisasi jika data lama belum ada pemasukan
+                if (!appData.incomes) appData.incomes = [];
             }
         }
         
@@ -427,7 +415,6 @@
         window.scrollTo(0, 0);
     }
 
-    // FUNGSI SAKELAR FORM
     function switchFormType(type) {
         const btnOut = document.getElementById('btn-toggle-pengeluaran');
         const btnIn = document.getElementById('btn-toggle-pemasukan');
@@ -499,7 +486,6 @@
         if (!Array.isArray(appData.transactions)) appData.transactions = [];
         if (!Array.isArray(appData.incomes)) appData.incomes = [];
 
-        // FILTER PENGELUARAN
         const filteredTx = appData.transactions.filter(tx => {
             let matchLoc = currentDashboardLocation === 'Semua' ? true : (tx.location || 'Umum') === currentDashboardLocation;
             let matchDate = true;
@@ -510,7 +496,6 @@
             return matchLoc && matchDate && matchSearch;
         });
 
-        // FILTER PEMASUKAN
         const filteredInc = appData.incomes.filter(inc => {
             let matchLoc = currentDashboardLocation === 'Semua' ? true : (inc.location || 'Umum') === currentDashboardLocation;
             let matchDate = true;
@@ -521,7 +506,6 @@
             return matchLoc && matchDate && matchSearch;
         });
 
-        // KALKULASI ARUS KAS
         const totalPengeluaran = filteredTx.reduce((acc, curr) => acc + (curr.total || 0), 0);
         const totalPemasukan = filteredInc.reduce((acc, curr) => acc + (curr.amount || 0), 0);
         const saldoAkhir = totalPemasukan - totalPengeluaran;
@@ -530,7 +514,6 @@
         document.getElementById('dash-pemasukan').textContent = formatRp(totalPemasukan);
         document.getElementById('dash-saldo').textContent = formatRp(saldoAkhir);
 
-        // KARTU KATEGORI PENGELUARAN
         const catSummary = {};
         filteredTx.forEach(tx => {
             let c = tx.category || 'Lainnya';
@@ -585,6 +568,63 @@
             containers[i].classList.add('hidden');
         }
         if (wasHidden) { const tgt = document.getElementById(`wrap-detail-${targetId}`); tgt.classList.remove('hidden'); setTimeout(() => tgt.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50); }
+    }
+
+    function showKasHistory(type) {
+        const modal = document.getElementById('history-modal'); 
+        const content = document.getElementById('history-modal-content');
+        const subTitleLocation = currentDashboardLocation === 'Semua' ? 'Semua Proyek' : `${currentDashboardLocation}`;
+        
+        const historyOut = appData.transactions.filter(tx => {
+            let matchLoc = currentDashboardLocation === 'Semua' ? true : (tx.location || 'Umum') === currentDashboardLocation;
+            let matchDate = true;
+            if (filterStartDate) matchDate = matchDate && tx.date >= filterStartDate;
+            if (filterEndDate) matchDate = matchDate && tx.date <= filterEndDate;
+            return matchLoc && matchDate;
+        }).map(tx => ({ ...tx, jenis: 'out' }));
+
+        const historyInc = appData.incomes.filter(inc => {
+            let matchLoc = currentDashboardLocation === 'Semua' ? true : (inc.location || 'Umum') === currentDashboardLocation;
+            let matchDate = true;
+            if (filterStartDate) matchDate = matchDate && inc.date >= filterStartDate;
+            if (filterEndDate) matchDate = matchDate && inc.date <= filterEndDate;
+            return matchLoc && matchDate;
+        }).map(inc => ({ ...inc, jenis: 'in' }));
+
+        let dataToShow = [];
+        let modalTitle = "";
+        
+        if (type === 'semua') {
+            dataToShow = [...historyOut, ...historyInc];
+            modalTitle = `<i class="fas fa-wallet text-blue-500 mr-2"></i> Riwayat Arus Kas`;
+        } else if (type === 'pemasukan') {
+            dataToShow = [...historyInc];
+            modalTitle = `<i class="fas fa-arrow-circle-down text-green-500 mr-2"></i> Riwayat Pemasukan`;
+        }
+        
+        dataToShow.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        document.getElementById('history-modal-title').innerHTML = `<div><span class="text-[10px] text-gray-400 font-semibold uppercase block mb-1">Lokasi: ${subTitleLocation}</span><div class="flex items-center text-lg font-bold text-gray-800">${modalTitle}</div></div>`;
+
+        if (dataToShow.length === 0) {
+            content.innerHTML = `<div class="text-center text-xs text-gray-500 py-10">Belum ada riwayat tercatat pada filter ini.</div>`;
+        } else {
+            content.innerHTML = '<div class="space-y-3">' + dataToShow.map(item => {
+                let tagLokasi = (currentDashboardLocation === 'Semua' && item.location) ? `<span class="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded ml-2 border border-gray-200"><i class="fas fa-map-marker-alt"></i> ${item.location}</span>` : '';
+                let imgHtml = item.image ? `<a href="${item.image}" target="_blank" class="mt-2 text-[10px] bg-blue-50 text-blue-600 px-2 py-1 rounded inline-flex items-center gap-1 border border-blue-200 hover:bg-blue-100"><i class="fas fa-image"></i> Bukti</a>` : '';
+
+                if (item.jenis === 'out') {
+                    const sty = getCategoryStyle(item.category);
+                    let tagToko = item.store ? `<span class="block mt-1 text-[10px] font-medium text-yellow-600 bg-yellow-50 px-1.5 py-0.5 rounded-md inline-block border border-yellow-200 shadow-sm"><i class="fas fa-store mr-1"></i>${item.store}</span>` : '';
+                    let detailText = `Qty: <span class="font-bold text-gray-700">${item.qty} ${item.unit||''}</span> <span class="text-gray-300 mx-1">|</span> @${formatRp(item.price)}`;
+
+                    return `<div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden flex justify-between items-start"><div class="absolute left-0 top-0 bottom-0 w-1 ${sty.btn}"></div><div class="pl-3"><p class="text-xs font-semibold text-gray-500 mb-1"><i class="far fa-calendar-alt mr-1"></i>${formatDate(item.date)} ${tagLokasi}</p><p class="text-[11px] font-bold text-gray-800">${item.name || '-'}</p><p class="text-[10px] text-gray-500">${detailText}</p>${tagToko}<br>${imgHtml}</div><div class="font-bold text-red-600 text-sm text-right">-${formatRp(item.total)}</div></div>`;
+                } else {
+                    return `<div class="bg-white p-3 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden flex justify-between items-start"><div class="absolute left-0 top-0 bottom-0 w-1 bg-green-500"></div><div class="pl-3"><p class="text-xs font-semibold text-gray-500 mb-1"><i class="far fa-calendar-alt mr-1"></i>${formatDate(item.date)} ${tagLokasi}</p><p class="text-[11px] font-bold text-gray-800 italic">"${item.note || 'Pemasukan'}"</p><p class="text-[10px] text-gray-500">Pemasukan Dana</p>${imgHtml}</div><div class="font-bold text-green-600 text-sm text-right">+${formatRp(item.amount)}</div></div>`;
+                }
+            }).join('') + '</div>';
+        }
+        modal.classList.replace('hidden','flex');
     }
 
     function showItemHistory(catName, itemName) {
@@ -675,7 +715,6 @@
     
     function removeIncomeImage() { currentIncomeImageBase64 = null; document.getElementById('inc-image').value = ''; document.getElementById('inc-image-preview-container').classList.add('hidden'); document.getElementById('inc-image-preview').src = ''; }
 
-    // MENYIMPAN PENGELUARAN
     function handleTrxSubmit(e) {
         e.preventDefault();
         const catSelect = document.getElementById('trx-category');
@@ -704,7 +743,6 @@
         if(appData.gasUrl && navigator.onLine) syncData(true);
     }
 
-    // MENYIMPAN PEMASUKAN
     function handleIncomeSubmit(e) {
         e.preventDefault();
         let newInc = {
@@ -733,13 +771,11 @@
         if (!Array.isArray(appData.transactions)) appData.transactions = [];
         if (!Array.isArray(appData.incomes)) appData.incomes = [];
 
-        // GABUNGKAN DATA PENGELUARAN & PEMASUKAN UNTUK HISTORI
         let combinedTrx = [
             ...appData.transactions.map(tx => ({ ...tx, jenis: 'out' })),
             ...appData.incomes.map(inc => ({ ...inc, jenis: 'in' }))
         ];
 
-        // URUTKAN BERDASARKAN TANGGAL TERBARU
         combinedTrx.sort((a, b) => new Date(b.date) - new Date(a.date));
         
         if (searchTransaksiQuery) {
@@ -819,7 +855,6 @@
         const unsyncedInc = (appData.incomes || []).filter(inc => !inc.synced);
 
         try {
-            // MENGIRIM KEDUA DATA: PENGELUARAN & PEMASUKAN
             const response = await fetch(appData.gasUrl, { method: 'POST', body: JSON.stringify({ action: 'sync', data: unsyncedTx, incomes: unsyncedInc }), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: 'follow' });
             if (!response.ok) throw new Error("HTTP Status: " + response.status);
             const result = await response.json();
@@ -869,10 +904,15 @@
         document.getElementById('chat-box').appendChild(loadBubble); scrollToChatBottom();
 
         try {
+            // Memfilter "image" (Base64) agar teks JSON tidak terlalu raksasa saat dikirim ke Google
             const cleanTransactions = appData.transactions.map(tx => { const { image, ...rest } = tx; return rest; });
-            const contextData = JSON.stringify({ pengeluaran: cleanTransactions, pemasukan: appData.incomes });
+            const cleanIncomes = appData.incomes.map(inc => { const { image, ...rest } = inc; return rest; });
+
+            const contextData = JSON.stringify({ pengeluaran: cleanTransactions, pemasukan: cleanIncomes });
             const prompt = `Ini adalah Data Keuangan Proyek saya saat ini (Dalam JSON): ${contextData}\n\nPertanyaan Saya: ${text}`;
-            const sysInstruction = "Anda adalah Asisten AI profesional khusus untuk aplikasi keuangan kontraktor. Anda akan diberikan data JSON berisi pemasukan dan pengeluaran proyek. Jawab dalam bahasa Indonesia yang ramah, profesional, dan akurat berdasarkan data tersebut. Jangan gunakan kata-kata teknis coding. Jika pengguna bertanya di luar konteks konstruksi/keuangan, tolak dengan sopan.";
+            
+            // Perisai Pelindung AI (Menolak pertanyaan di luar konteks)
+            const sysInstruction = "Anda adalah Asisten AI profesional khusus untuk aplikasi keuangan kontraktor. Anda akan diberikan data JSON berisi pemasukan dan pengeluaran proyek. Jawab dalam bahasa Indonesia yang ramah, profesional, dan akurat berdasarkan data tersebut. Jangan gunakan kata-kata teknis coding. Jika pengguna bertanya di luar konteks konstruksi atau keuangan proyek, tolak dengan sopan dan ingatkan bahwa Anda hanya melayani pertanyaan terkait keuangan proyek.";
             
             const payload = { contents: [{ parts: [{ text: prompt }] }], systemInstruction: { parts: [{ text: sysInstruction }] } };
             const modelRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
