@@ -906,12 +906,38 @@
         document.getElementById('chat-box').appendChild(loadBubble); scrollToChatBottom();
 
         try {
+            // Bersihkan data dari kode gambar yang berat
             const cleanTransactions = appData.transactions.map(tx => { const { image, ...rest } = tx; return rest; });
-            const cleanIncomes = appData.incomes.map(inc => { const { image, ...rest } = inc; return rest; });
-            const contextData = JSON.stringify({ pengeluaran: cleanTransactions, pemasukan: cleanIncomes });
+            const cleanIncomes = (appData.incomes || []).map(inc => { const { image, ...rest } = inc; return rest; });
             
+            // BANTUAN MATEMATIKA UNTUK AI (Kalkulator Javascript)
+            const totalPengeluaran = cleanTransactions.reduce((sum, tx) => sum + (Number(tx.total) || 0), 0);
+            const totalPemasukan = cleanIncomes.reduce((sum, inc) => sum + (Number(inc.amount) || 0), 0);
+            const saldoAkhir = totalPemasukan - totalPengeluaran;
+            
+            const rekapKategori = {};
+            cleanTransactions.forEach(tx => {
+                let cat = tx.category || 'Lainnya';
+                if(!rekapKategori[cat]) rekapKategori[cat] = 0;
+                rekapKategori[cat] += (Number(tx.total) || 0);
+            });
+
+            // Selipkan contekan ringkasan ke dalam paket data AI
+            const contextData = JSON.stringify({ 
+                RINGKASAN_MATEMATIKA: { 
+                    Saldo_Saat_Ini: saldoAkhir, 
+                    Total_Pemasukan: totalPemasukan, 
+                    Total_Pengeluaran: totalPengeluaran, 
+                    Pengeluaran_Per_Kategori: rekapKategori 
+                },
+                DATA_DETAIL: { 
+                    pemasukan: cleanIncomes, 
+                    pengeluaran: cleanTransactions 
+                } 
+            });
+
             const prompt = `Ini adalah Data Keuangan Proyek saya saat ini (Dalam JSON): ${contextData}\n\nPertanyaan Saya: ${text}`;
-            const sysInstruction = "Anda adalah Asisten AI profesional khusus untuk aplikasi keuangan kontraktor. Anda akan diberikan data JSON berisi pemasukan dan pengeluaran proyek. Jawab dalam bahasa Indonesia yang ramah, profesional, dan akurat berdasarkan data tersebut. Jangan gunakan kata-kata teknis coding. Jika pengguna bertanya di luar konteks konstruksi/keuangan, tolak dengan sopan.";
+            const sysInstruction = "Anda adalah Asisten AI profesional khusus untuk aplikasi keuangan kontraktor. Anda akan diberikan data JSON berisi RINGKASAN_MATEMATIKA dan DATA_DETAIL. Jawab dalam bahasa Indonesia yang ramah, profesional, dan akurat. WAJIB gunakan angka pasti dari bagian RINGKASAN_MATEMATIKA jika ditanya soal total atau saldo agar tidak salah hitung. Jika ditanya rincian, baru lihat DATA_DETAIL. Jangan gunakan kata-kata teknis coding. Jika pengguna bertanya di luar konteks konstruksi/keuangan, tolak dengan sopan.";
             
             const payload = { contents: [{ parts: [{ text: prompt }] }], systemInstruction: { parts: [{ text: sysInstruction }] } };
             const modelRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
