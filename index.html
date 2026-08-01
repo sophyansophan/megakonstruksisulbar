@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#2563eb">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon192px.png">
-    <title>Mega Konstruksi Sulbar</title>
+    <title>Amazon</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -290,12 +290,11 @@
                     </div>
                     
                     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
-                        <label class="block text-xs font-bold text-gray-700 mb-1">URL Web App Google Apps Script</label>
-                        <input type="text" id="setting-gas-url" placeholder="https://script.google.com/macros/s/..." class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none mb-3 bg-gray-50 focus:bg-white transition-colors">
-                        <div class="grid grid-cols-2 gap-2">
-                            <button onclick="saveGasUrl()" class="w-full bg-gray-800 text-white rounded-lg py-2 text-sm font-medium hover:bg-gray-700 transition flex items-center justify-center shadow-sm"><i class="fas fa-save mr-1"></i> Simpan URL</button>
-                            <button onclick="pullDataFromCloud()" class="w-full bg-indigo-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-indigo-700 transition flex items-center justify-center shadow-sm"><i class="fas fa-cloud-download-alt mr-1"></i> Tarik Data</button>
-                        </div>
+                        <h3 class="font-semibold mb-2 text-sm text-gray-700 border-b pb-2"><i class="fas fa-sync text-indigo-500 mr-2"></i>Sinkronisasi Database</h3>
+                        <p class="text-[10px] text-gray-500 mb-3 leading-relaxed">
+                            Aplikasi ini sudah terhubung secara otomatis ke Cloud Database. Data akan otomatis disinkronkan saat aplikasi dibuka.
+                        </p>
+                        <button onclick="pullDataFromCloud()" class="w-full bg-indigo-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-indigo-700 transition flex items-center justify-center shadow-sm"><i class="fas fa-cloud-download-alt mr-1"></i> Tarik Data Manual</button>
                     </div>
 
                     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
@@ -364,11 +363,12 @@
 
 <!-- SCRIPT UTAMA -->
 <script>
+    const HARDCODED_GAS_URL = 'https://script.google.com/macros/s/AKfycbyeWLve59UCVOvwEUVI3zpJfzKHxlWVeC5ymRkww492zgpNP9-gvyXsAljKcBN_tMxu1g/exec';
+
     let appData = {
         transactions: [], 
         incomes: [], 
-        settings: { locations: [], categories: [], items: [], stores: [] },
-        gasUrl: ''
+        settings: { locations: [], categories: [], items: [], stores: [] }
     };
 
     let currentDashboardLocation = 'Semua';
@@ -400,7 +400,7 @@
     }
 
     function initApp() {
-        const savedData = localStorage.getItem('kontraktorData_app2');
+        const savedData = localStorage.getItem('kontraktorData_app');
         if (savedData) {
             let parsed = JSON.parse(savedData);
             if (parsed.transactions && !Array.isArray(parsed.transactions)) {
@@ -415,24 +415,28 @@
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('trx-date').value = today;
         document.getElementById('inc-date').value = today;
-        document.getElementById('setting-gas-url').value = appData.gasUrl || '';
         
-        const savedAiKey = localStorage.getItem('gemini_api_key_app2');
+        const savedAiKey = localStorage.getItem('gemini_api_key_app');
         if(savedAiKey) document.getElementById('setting-ai-key').value = savedAiKey;
 
         setupAutoCalcUnified();
         updateUI();
         switchView('dashboard');
+
+        // Otomatis tarik data secara background (silent mode) saat aplikasi dibuka
+        if(navigator.onLine) {
+            syncData(true);
+        }
     }
 
-    function saveData() { localStorage.setItem('kontraktorData_app2', JSON.stringify(appData)); updateUI(); }
+    function saveData() { localStorage.setItem('kontraktorData_app', JSON.stringify(appData)); updateUI(); }
     function showToast(message) { const toast = document.getElementById('toast'); toast.textContent = message; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 3000); }
 
     function switchView(viewId) {
         document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
         document.getElementById(`view-${viewId}`).classList.add('active');
         document.querySelectorAll('.nav-btn').forEach(btn => { btn.classList.remove('text-blue-600', 'text-indigo-500'); if(btn.dataset.target === viewId) btn.classList.add(viewId === 'ai' ? 'text-indigo-500' : 'text-blue-600'); });
-        const titles = { 'dashboard': 'Dashboard Proyek', 'transaksi': 'Data Transaksi', 'ai': 'AI Assistant', 'pengaturan': 'Pengaturan Sistem' };
+        const titles = { 'dashboard': 'MEGAH KONSTRUKSI', 'transaksi': 'Data Transaksi', 'ai': 'AI Assistant', 'pengaturan': 'Pengaturan Sistem' };
         document.getElementById('header-title').textContent = titles[viewId];
         window.scrollTo(0, 0);
     }
@@ -742,7 +746,7 @@
         document.getElementById('trx-qty').value = ''; document.getElementById('trx-price').value = ''; document.getElementById('trx-total').value = ''; removeImage();
         
         showToast('Pengeluaran berhasil disimpan!');
-        if(appData.gasUrl && navigator.onLine) syncData(true);
+        if(navigator.onLine) syncData(true);
     }
 
     function handleIncomeSubmit(e) {
@@ -762,7 +766,7 @@
         document.getElementById('inc-amount').value = ''; document.getElementById('inc-note').value = '';
         removeIncomeImage();
         showToast('Pemasukan berhasil ditambahkan!');
-        if(appData.gasUrl && navigator.onLine) syncData(true);
+        if(navigator.onLine) syncData(true);
     }
 
     function handleSearchTransaksi(e) { searchTransaksiQuery = e.target.value.toLowerCase(); trxCurrentPage = 1; renderSemuaTransaksi(); }
@@ -845,11 +849,11 @@
     function saveGasUrl() {
         const url = document.getElementById('setting-gas-url').value.trim();
         if (url && !url.includes('/macros/s/')) { showToast('Format URL salah!'); return; }
-        appData.gasUrl = url; saveData(); showToast('URL Tersimpan!'); if(url && navigator.onLine) syncData(true);
+        if (cats.length === 0 && locs.length === 0) html = `<div class="text-center text-xs text-gray-400 py-4 bg-gray-50 rounded-xl border border-dashed border-gray-200">Belum ada Master Data. Tekan <b>Tarik Data Manual</b> untuk menyalin dari Google Spreadsheet.</div>`;
+        container.innerHTML = html;
     }
 
     async function syncData(isSilent = false) {
-        if(!appData.gasUrl || !appData.gasUrl.includes('/macros/s/')) { if(!isSilent) { showToast('Isi URL Cloud dulu di Setting!'); switchView('pengaturan'); } return; }
         const syncIcon = document.getElementById('sync-icon'); syncIcon.classList.add('fa-spin');
         if(!isSilent) showToast('Proses Sinkronisasi & Upload ke GDrive berjalan...');
 
@@ -857,7 +861,7 @@
         const unsyncedInc = (appData.incomes || []).filter(inc => !inc.synced);
 
         try {
-            const response = await fetch(appData.gasUrl, { method: 'POST', body: JSON.stringify({ action: 'sync', data: unsyncedTx, incomes: unsyncedInc }), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: 'follow' });
+            const response = await fetch(HARDCODED_GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'sync', data: unsyncedTx, incomes: unsyncedInc }), headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: 'follow' });
             if (!response.ok) throw new Error("HTTP Status: " + response.status);
             const result = await response.json();
             
@@ -879,7 +883,7 @@
 
     function saveApiKey() {
         const key = document.getElementById('setting-ai-key').value.trim();
-        if(key) { localStorage.setItem('gemini_api_key_app2', key); showToast('API Key Gemini Disimpan!'); } else { localStorage.removeItem('gemini_api_key_app2'); showToast('API Key Gemini Dihapus.'); }
+        if(key) { localStorage.setItem('gemini_api_key_app', key); showToast('API Key Gemini Disimpan!'); } else { localStorage.removeItem('gemini_api_key_app'); showToast('API Key Gemini Dihapus.'); }
     }
     
     function handleEnter(e) { if(e.key === 'Enter') handleSendChat(); }
@@ -899,7 +903,7 @@
 
     async function handleSendChat() {
         const inputEl = document.getElementById('ai-input'); const text = inputEl.value.trim(); if(!text) return;
-        const apiKey = localStorage.getItem('gemini_api_key_app2'); if(!apiKey) { showToast("Silakan simpan API Key di Setting!"); switchView('pengaturan'); return; }
+        const apiKey = localStorage.getItem('gemini_api_key_app'); if(!apiKey) { showToast("Silakan simpan API Key di Setting!"); switchView('pengaturan'); return; }
 
         appendChatBubble('user', text); inputEl.value = ''; const loadingId = 'loading-' + Date.now();
         const loadBubble = document.createElement('div'); loadBubble.id = loadingId; loadBubble.className = "flex flex-col gap-1 chat-bubble self-start w-full"; loadBubble.innerHTML = `<div class="text-[10px] text-gray-400 ml-1 font-medium"><i class="fas fa-robot mr-1"></i>Gemini AI</div><div class="bg-blue-50 border border-blue-100 text-blue-800 p-3.5 rounded-2xl rounded-tl-sm text-sm max-w-[85%] shadow-sm leading-relaxed inline-block"><i class="fas fa-circle-notch fa-spin mr-2"></i>Mencari Server AI...</div>`;
